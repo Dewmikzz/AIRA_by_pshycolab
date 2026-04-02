@@ -21,6 +21,8 @@ logger = logging.getLogger("AiraHealth")
 
 def check_ram() -> float:
     """Returns the total RAM in GB."""
+    if not PSUTIL_AVAILABLE:
+        return 8.0 # Default fallback
     mem = psutil.virtual_memory()
     return mem.total / (1024 ** 3)
 

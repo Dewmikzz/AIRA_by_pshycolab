@@ -1,6 +1,6 @@
 @echo off
 REM ═══ FILE: start.bat ═══
-REM Purpose: One-click launcher for Windows
+REM Purpose: One-click launcher with resilient installation for Aira
 REM Inputs: CMD environment
 REM Outputs: Running FastAPI server
 
@@ -25,21 +25,31 @@ if not exist venv (
 REM 3. Activate Venv
 call venv\Scripts\activate
 
-REM 4. Specialized Install for Windows (User Request)
-echo [*] Installing Torch (CPU version) first...
+REM 4. Resilient Installation
+echo [*] Installing Core System (FastAPI, Uvicorn)...
+pip install -r requirements-core.txt --quiet
+if %errorlevel% neq 0 (
+    echo [!] Core installation failed. Checking internet connection...
+    pause
+    exit /b
+)
+
+echo [*] Attempting to install Local-AI modules (Torch, TTS, Whisper)...
+echo [NOTE] If this part fails, Aira will still run in 'Mock Mode'.
 pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet
-
-echo [*] Installing Coqui TTS...
 pip install TTS --quiet
-
-echo [*] Installing remaining dependencies...
+pip install openai-whisper==20231117 --quiet
 pip install -r requirements.txt --quiet
 
-REM 5. Run Setup
+REM 5. Run Setup (Checks Ollama/FFmpeg)
+echo [*] Running system health check...
 python setup.py
 
 REM 6. Start Server
-echo [*] Starting Aira on http://localhost:8000...
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+echo ══════════════════════════════════════════════
+echo    Aira is starting on http://localhost:8000
+echo    Mock Mode is ACTIVE by default
+echo ══════════════════════════════════════════════
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 pause
