@@ -11,7 +11,11 @@ except ImportError:
 import os
 import tempfile
 import time
-from pydub import AudioSegment
+try:
+    from pydub import AudioSegment
+    PYDUB_AVAILABLE = True
+except ImportError:
+    PYDUB_AVAILABLE = False
 import logging
 import random
 from dotenv import load_dotenv
@@ -69,6 +73,10 @@ class SpeechToText:
         try:
             # Convert to wav for consistency if not already wav
             if file_ext != "wav":
+                if not PYDUB_AVAILABLE:
+                    logger.error("pydub (AudioSegment) is missing. Cannot convert audio. Please install pydub and ffmpeg.")
+                    return "__error__"
+                
                 wav_path = temp_path.replace(f".{file_ext}", ".wav")
                 audio = AudioSegment.from_file(temp_path)
                 audio.export(wav_path, format="wav")
