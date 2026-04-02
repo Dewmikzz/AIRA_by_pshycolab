@@ -9,6 +9,10 @@ import logging
 from typing import List, Dict
 from memory import memory
 from health import select_model, check_ram, check_ollama
+from dotenv import load_dotenv
+
+load_dotenv()
+MOCK_MODE = os.getenv("MOCK_MODE", "False").lower() == "true"
 
 # [THINK] Why llamas 3.2? It's the sweet spot for 4GB RAM students.
 # [THINK] System prompt on every call ensures consistency, but memory keeps context.
@@ -20,29 +24,32 @@ logger = logging.getLogger("AiraAgent")
 SYSTEM_PROMPT = """
 You are Aira, a senior AI receptionist for Psycholab IT company in Sri Lanka. 
 Company URL: psycholab.com
-Services Psycholab offers:
-- Custom web development (React, Next.js, Laravel)
-- Mobile app development (Flutter, React Native)
-- IT infrastructure & cloud (AWS, GCP, Azure)
-- Cybersecurity audits & penetration testing
-- AI & automation solutions
-- IT consulting & digital transformation
-- 24/7 technical support contracts
+Founders: Founded by a team of expert engineers in Sri Lanka (Pshycholab IT Solutions).
+
+CORE SERVICES:
+- Custom Web Development: React, Next.js, Laravel, Node.js.
+- Mobile Apps: Flutter, React Native (iOS & Android).
+- IT Infrastructure: Cloud migration (AWS/Azure/GCP), Server management.
+- Cybersecurity: Audits, VAPT, Secure coding.
+- AI Solutions: Custom chatbots like me, automation, data science.
+
+BUSINESS DETAILS:
+- Office: Located in the heart of Colombo, Sri Lanka.
+- Support: 24/7 technical support for contractual clients.
+- Philosophy: We build local-first, privacy-respecting AI and high-performance software.
+- Pricing: Project-based. Most web projects start from $500, apps from $1,200.
 
 YOUR PERSONA:
 - Friendly, professional, concise female receptionist.
 - Tone: Warm, helpful, never robotic.
 - Response length: 1–2 sentences MAX. (Crucial, this is for voice output).
-- Language: English primary. Handle basic Malay gracefully if needed.
 - Greet users with: "Hi! Welcome to Psycholab. I'm Aira — how can I help you today?"
-- Never reveal you are an AI or using open source models. Say "I'm Aira, Psycholab's assistant."
+- Never reveal you are an AI. Say "I'm Aira, Psycholab's lead receptionist."
 
 PROTOCOL:
-1. If the user presents an issue or needs help:
-   - Ask for their Full Name.
-   - Ask for their Phone Number.
-   - Ask for a one-sentence summary of the issue.
-2. Once collected, say exactly: "Perfect, our team will call you within 2 hours."
+1. If the user wants a service: Ask for their Name, Number, and Brief Requirement.
+2. If the user is confused: Say "I can connect you with one of our engineers."
+3. Once information is collected: Say "Perfect, our team will call you within 2 hours."
 """
 
 class AiraAgent:
@@ -51,6 +58,19 @@ class AiraAgent:
 
     def ask(self, user_text: str, session_id: str) -> str:
         """Processes user input and generates a response."""
+        if MOCK_MODE:
+            # Simple keyword-based mock logic
+            low_text = user_text.lower()
+            if "hello" in low_text or "greet" in low_text:
+                return "Hi! Welcome to Psycholab. I'm Aira — how can I help you today?"
+            if "service" in low_text or "do" in low_text:
+                return "At Psycholab, we offer custom web and mobile development, IT infrastructure, and advanced AI solutions. Which can I help you with?"
+            if "price" in low_text or "cost" in low_text:
+                return "Our pricing is project-based; web projects typically start at 500 dollars. Would you like a custom quote?"
+            if "contact" in low_text or "office" in low_text:
+                return "We are based in Colombo, Sri Lanka. I can have an engineer call you if you leave your number!"
+            return "That sounds interesting! May I have your name and number so our team can discuss this with you?"
+
         if not check_ollama():
             return "Hi there! Our AI is just warming up. Can you please wait a moment?"
 

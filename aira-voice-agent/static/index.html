@@ -4,282 +4,445 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aira — Psycholab AI Receptionist</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0a0a0a;
-            --card-bg: #141414;
+            --bg-deep: hslice(230, 20%, 5%);
+            --glass-bg: rgba(20, 22, 28, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --accent: #7C3AED;
-            --text-primary: #f5f5f5;
-            --text-muted: #888;
-            --radius: 16px;
+            --accent-glow: rgba(124, 58, 237, 0.4);
+            --text-high: #ffffff;
+            --text-mid: #a0aec0;
+            --text-low: #718096;
+            --radius-xl: 24px;
+            --radius-lg: 16px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
-            background: var(--bg-color);
-            color: var(--text-primary);
-            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #050508;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(124, 58, 237, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.05) 0%, transparent 40%);
+            color: var(--text-high);
+            font-family: 'Inter', sans-serif;
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        /* Header */
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; }
+
+        /* --- Header --- */
         header {
-            padding: 20px;
-            background: var(--card-bg);
-            border-bottom: 1px solid #333;
+            padding: 24px 32px;
+            backdrop-filter: blur(12px);
+            background: var(--glass-bg);
+            border-bottom: 1px solid var(--glass-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 100;
         }
 
-        .status-dot {
-            width: 10px; height: 10px; border-radius: 50%;
-            background: #888; display: inline-block; margin-right: 8px;
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .status-dot.online { background: #10B981; box-shadow: 0 0 10px #10B981; }
-        .status-dot.offline { background: #EF4444; }
 
-        /* Chat Log */
-        #chat-log {
+        .logo-ring {
+            width: 32px; height: 32px;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .logo-dot {
+            width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: #4a5568; }
+        .dot.online { background: #10B981; box-shadow: 0 0 8px #10B981; }
+        .dot.offline { background: #EF4444; }
+
+        /* --- Chat Interface --- */
+        main {
             flex: 1;
-            padding: 20px;
+            padding: 24px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
+            scroll-behavior: smooth;
         }
+
+        /* Custom Scrollbar */
+        main::-webkit-scrollbar { width: 6px; }
+        main::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
 
         .message {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: var(--radius);
-            line-height: 1.5;
-            animation: fadeIn 0.3s ease;
-        }
-        .user-msg {
-            align-self: flex-end;
-            background: var(--accent);
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-        .aira-msg {
-            align-self: flex-start;
-            background: #222;
-            border-bottom-left-radius: 4px;
+            max-width: 75%;
+            padding: 16px 20px;
+            border-radius: var(--radius-lg);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            position: relative;
         }
 
-        /* Controls */
-        .controls {
-            padding: 40px 20px;
-            background: linear-gradient(to top, var(--card-bg), transparent);
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .aira-msg {
+            align-self: flex-start;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-bottom-left-radius: 4px;
+            color: var(--text-high);
+        }
+
+        .user-msg {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--accent), #5B21B6);
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.2);
+        }
+
+        .timestamp {
+            font-size: 0.7rem; color: var(--text-low); margin-top: 6px;
+            display: block; opacity: 0.8;
+        }
+
+        /* --- Footer Controls --- */
+        .controls-container {
+            padding: 32px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 16px;
+            background: linear-gradient(to top, rgba(5,5,8,1), transparent);
+            position: relative;
         }
 
-        #mic-btn {
-            width: 90px; height: 90px;
+        /* Aira Aura */
+        .aura-ring {
+            position: absolute;
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            background: var(--accent-glow);
+            filter: blur(20px);
+            opacity: 0;
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .aura-active { opacity: 1; transform: scale(1.8); animation: pulseAura 2s infinite ease-in-out; }
+        @keyframes pulseAura {
+            0%, 100% { transform: scale(1.6); opacity: 0.4; }
+            50% { transform: scale(2.2); opacity: 0.6; }
+        }
+
+        .mic-button {
+            width: 80px; height: 80px;
             border-radius: 50%;
             background: var(--accent);
             border: none;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
         }
-        #mic-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .mic-button:hover { transform: translateY(-4px) scale(1.05); box-shadow: 0 15px 40px rgba(124, 58, 237, 0.5); }
+        .mic-button:active { transform: scale(0.95); }
+        .mic-button.recording { background: #EF4444; box-shadow: 0 0 40px rgba(239, 68, 68, 0.6); }
 
         .waveform {
-            display: flex; align-items: center; gap: 3px; position: absolute;
+            display: none; align-items: center; gap: 4px;
         }
         .waveform span {
-            width: 4px; height: 15px; background: white; border-radius: 2px;
-            animation: bounce 1s infinite ease-in-out;
+            width: 4px; height: 20px; background: white; border-radius: 2px;
+            animation: barHeight 0.8s infinite ease-in-out;
         }
         .waveform span:nth-child(2) { animation-delay: 0.1s; }
         .waveform span:nth-child(3) { animation-delay: 0.2s; }
+        .waveform span:nth-child(4) { animation-delay: 0.3s; }
 
-        @keyframes bounce {
-            0%, 100% { height: 10px; }
-            50% { height: 30px; }
+        @keyframes barHeight {
+            0%, 100% { height: 12px; }
+            50% { height: 32px; }
         }
 
-        #status-text { color: var(--text-muted); font-size: 0.9rem; }
-
-        /* Animations */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .recording { animation: pulse 1.5s infinite; background: #EF4444 !important; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-
-        .spinner {
-            width: 30px; height: 30px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+        .status-text {
+            font-size: 0.9rem;
+            color: var(--text-mid);
+            font-weight: 500;
+            letter-spacing: 0.5px;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
-        footer {
-            padding: 10px; text-align: center; font-size: 0.7rem; color: #444; border-top: 1px solid #111;
+        /* --- Settings Panel --- */
+        .settings-toggle {
+            cursor: pointer; color: var(--text-low); transition: color 0.2s;
+        }
+        .settings-toggle:hover { color: var(--accent); }
+
+        #settings-drawer {
+            position: fixed; top: 0; right: -320px;
+            width: 300px; height: 100%;
+            background: var(--bg-deep);
+            border-left: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 40px 24px;
+        }
+        #settings-drawer.open { right: 0; }
+
+        .settings-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;
+        }
+        .settings-section { margin-bottom: 24px; }
+        .settings-label { font-size: 0.75rem; color: var(--text-low); text-transform: uppercase; margin-bottom: 12px; display: block; }
+        
+        .toggle-container {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.03);
+            padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border);
+        }
+
+        /* Custom Switch */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #2D3748; transition: .4s; border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+            z-index: 999; display: none;
+        }
+        .overlay.active { display: block; }
+
+        /* Tablet/Mobile Adjustments */
+        @media (max-width: 640px) {
+            .message { max-width: 85%; }
+            header { padding: 16px 20px; }
+            .brand span { font-size: 0.9rem; }
         }
     </style>
 </head>
 <body>
+    <div id="overlay" class="overlay" onclick="toggleSettings()"></div>
+
     <header>
-        <div>
-            <span id="health-dot" class="status-dot"></span>
-            <strong>Aira</strong> · Psycholab AI
+        <div class="brand">
+            <div class="logo-ring"><div class="logo-dot"></div></div>
+            <div style="display: flex; flex-direction: column;">
+                <span style="font-weight: 700; color: var(--text-high);">AIRA</span>
+                <span style="font-size: 0.7rem; color: var(--text-low);">Psycholab Assistant</span>
+            </div>
         </div>
-        <button onclick="resetSession()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.8rem;">Reset Session</button>
+        
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div class="status-badge">
+                <div id="health-dot" class="dot"></div>
+                <span id="health-label">Checking System...</span>
+            </div>
+            <div class="settings-toggle" onclick="toggleSettings()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </div>
+        </div>
     </header>
 
-    <div id="chat-log"></div>
+    <main id="chat-container">
+        <!-- Messages appear here -->
+    </main>
 
-    <div class="controls">
-        <button id="mic-btn">
-            <svg id="mic-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-            <div id="spinner" class="spinner" style="display:none;"></div>
-            <div id="waveform" class="waveform" style="display:none;">
+    <div class="controls-container">
+        <div id="aura" class="aura-ring"></div>
+        
+        <button id="mic-btn" class="mic-button">
+            <svg id="mic-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+            <div id="waveform" class="waveform">
                 <span></span><span></span><span></span><span></span>
             </div>
         </button>
-        <div id="status-text">Click to speak</div>
+        
+        <div id="status-display" class="status-text">Click to speak</div>
     </div>
 
-    <footer>Powered by Psycholab · Local AI Environment</footer>
+    <!-- Right Drawer -->
+    <div id="settings-drawer">
+        <div class="settings-header">
+            <h3>System Settings</h3>
+            <button onclick="toggleSettings()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        
+        <div class="settings-section">
+            <span class="settings-label">Mode Selection</span>
+            <div class="toggle-container">
+                <span>Mock Mode (API-less)</span>
+                <label class="switch">
+                    <input type="checkbox" id="mock-toggle" onchange="toggleMockAPI(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <p style="font-size: 0.7rem; color: var(--text-low); margin-top: 8px;">
+                Enable to test flow without local GPU/Ollama.
+            </p>
+        </div>
+
+        <div class="settings-section">
+            <span class="settings-label">Environment</span>
+            <div style="font-size: 0.85rem; color: var(--text-mid); display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>RAM Available:</span>
+                    <span id="ram-val">--</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Ollama Service:</span>
+                    <span id="ollama-val">Checking...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <button onclick="resetApp()" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #EF4444; background: transparent; color: #EF4444; font-weight: 600; cursor: pointer;">
+                Reset Session
+            </button>
+        </div>
+    </div>
 
     <script>
+        const micBtn = document.getElementById('mic-btn');
+        const micIcon = document.getElementById('mic-icon');
+        const waveform = document.getElementById('waveform');
+        const statusDisplay = document.getElementById('status-display');
+        const chatContainer = document.getElementById('chat-container');
+        const aura = document.getElementById('aura');
+        const healthDot = document.getElementById('health-dot');
+        const healthLabel = document.getElementById('health-label');
+        const mockToggle = document.getElementById('mock-toggle');
+        const settingsDrawer = document.getElementById('settings-drawer');
+        const overlay = document.getElementById('overlay');
+
+        let isRecording = false;
         let mediaRecorder;
         let audioChunks = [];
-        let sessionId = sessionStorage.getItem('sessionId') || crypto.randomUUID();
-        sessionStorage.setItem('sessionId', sessionId);
-        
-        let audioContext;
-        let analyser;
-        let silenceStartTime = null;
-        const SILENCE_THRESHOLD = 0.01;
-        const SILENCE_DURATION = 2500; // 2.5 seconds
-        
-        const chatLog = document.getElementById('chat-log');
-        const micBtn = document.getElementById('mic-btn');
-        const statusText = document.getElementById('status-text');
-        const micIcon = document.getElementById('mic-icon');
-        const spinner = document.getElementById('spinner');
-        const waveform = document.getElementById('waveform');
-        const healthDot = document.getElementById('health-dot');
+        let sessionId = sessionStorage.getItem('aira_sid') || crypto.randomUUID();
+        sessionStorage.setItem('aira_sid', sessionId);
 
-        // 1. Initial Health Check
-        async function checkHealth() {
+        // --- Health & Config ---
+        async function updateHealth() {
             try {
                 const res = await fetch('/health');
                 const data = await res.json();
-                healthDot.classList.add(data.ready ? 'online' : 'offline');
+                
+                healthDot.className = 'dot ' + (data.ready || data.mock_mode ? 'online' : 'offline');
+                healthLabel.innerText = data.mock_mode ? 'Mock Mode Active' : (data.ready ? 'System Ready' : 'LLM Offline');
+                
+                document.getElementById('ram-val').innerText = data.ram_gb + ' GB';
+                document.getElementById('ollama-val').innerText = data.ollama_online ? 'CONNECTED' : 'OFFLINE';
+                document.getElementById('ollama-val').style.color = data.ollama_online ? '#10B981' : '#EF4444';
+                
+                mockToggle.checked = data.mock_mode;
             } catch (e) {
-                healthDot.classList.add('offline');
+                console.error("Health poll failed", e);
             }
         }
-        checkHealth();
+        setInterval(updateHealth, 5000);
+        updateHealth();
 
-        // 2. Greeting Logic
-        async function greet() {
-            addMessage("Aira is greeting you...", 'aira-msg', true);
-            try {
-                const res = await fetch(`/greet?session_id=${sessionId}`);
-                const data = await res.json();
-                clearLastMessage();
-                addMessage(data.text, 'aira-msg');
-                playAudio(data.audio_base64);
-            } catch (e) {
-                clearLastMessage();
-                addMessage("Hi! I'm Aira from Psycholab. How can I help you?", 'aira-msg');
-            }
+        async function toggleMockAPI(enabled) {
+            await fetch(`/config?mock_mode=${enabled}`, { method: 'POST' });
+            updateHealth();
         }
-        setTimeout(greet, 1000);
 
-        // 3. Mic Handling
+        // --- UI Interactions ---
+        function toggleSettings() {
+            settingsDrawer.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.innerText = text;
+            
+            const time = document.createElement('span');
+            time.className = 'timestamp';
+            time.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            div.appendChild(time);
+
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // --- Voice Logic ---
         micBtn.onclick = () => {
-            if (mediaRecorder && mediaRecorder.state === 'recording') {
-                stopRecording();
-            } else {
-                startRecording();
-            }
+            if (isRecording) stopRecording();
+            else startRecording();
         };
 
         async function startRecording() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
-                
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
                 audioChunks = [];
-                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-                mediaRecorder.onstop = sendAudio;
 
-                // Silence detection
-                audioContext = new AudioContext();
-                const source = audioContext.createMediaStreamSource(stream);
-                analyser = audioContext.createAnalyser();
-                source.connect(analyser);
-                detectSilence();
+                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                mediaRecorder.onstop = uploadAudio;
 
                 mediaRecorder.start();
-                micBtn.classList.add('recording');
-                statusText.innerText = "Listening...";
-                statusText.style.color = "#EF4444";
+                isRecording = true;
+                setUIState('recording');
             } catch (err) {
-                console.error("Mic error:", err);
-                statusText.innerText = "Mic access denied";
+                statusDisplay.innerText = "Error: Mic access denied";
             }
         }
 
         function stopRecording() {
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            if (mediaRecorder && isRecording) {
                 mediaRecorder.stop();
-                micBtn.classList.remove('recording');
-                silenceStartTime = null;
+                isRecording = false;
+                setUIState('processing');
             }
         }
 
-        function detectSilence() {
-            if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
-            
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            analyser.getByteTimeDomainData(dataArray);
-            
-            let sum = 0;
-            for (let i = 0; i < bufferLength; i++) {
-                const val = (dataArray[i] - 128) / 128;
-                sum += val * val;
-            }
-            const volume = Math.sqrt(sum / bufferLength);
-
-            if (volume < SILENCE_THRESHOLD) {
-                if (!silenceStartTime) silenceStartTime = Date.now();
-                if (Date.now() - silenceStartTime > SILENCE_DURATION) {
-                    stopRecording();
-                    return;
-                }
-            } else {
-                silenceStartTime = null;
-            }
-            requestAnimationFrame(detectSilence);
-        }
-
-        async function sendAudio() {
+        async function uploadAudio() {
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            if (audioBlob.size < 500) {
-                statusText.innerText = "I didn't hear anything";
-                return;
-            }
-
-            setUIState('processing');
             const formData = new FormData();
             formData.append('audio', audioBlob, 'speech.webm');
             formData.append('session_id', sessionId);
@@ -288,70 +451,62 @@
                 const res = await fetch('/talk', { method: 'POST', body: formData });
                 const data = await res.json();
                 
-                addMessage(data.transcript, 'user-msg');
-                addMessage(data.reply, 'aira-msg');
+                if (data.transcript) addMessage(data.transcript, 'user-msg');
+                if (data.reply) addMessage(data.reply, 'aira-msg');
                 
                 if (data.audio_base64) {
-                    await playAudio(data.audio_base64);
+                    playAudio(data.audio_base64);
                 } else {
                     setUIState('idle');
                 }
             } catch (err) {
-                console.error("Pipeline error:", err);
-                statusText.innerText = "Connection error";
+                statusDisplay.innerText = "Network Error";
                 setUIState('idle');
             }
         }
 
-        // 4. UI Helpers
-        function addMessage(text, className, isTemporary = false) {
-            const div = document.createElement('div');
-            div.className = `message ${className}`;
-            if (isTemporary) div.id = 'temp-msg';
-            div.innerText = text;
-            chatLog.appendChild(div);
-            chatLog.scrollTop = chatLog.scrollHeight;
-        }
-
-        function clearLastMessage() {
-            const tempMsg = document.getElementById('temp-msg');
-            if (tempMsg) tempMsg.remove();
+        function playAudio(base64) {
+            const audio = new Audio("data:audio/wav;base64," + base64);
+            setUIState('speaking');
+            audio.onended = () => setUIState('idle');
+            audio.play();
         }
 
         function setUIState(state) {
-            micIcon.style.display = state === 'idle' ? 'block' : 'none';
-            spinner.style.display = state === 'processing' ? 'block' : 'none';
-            waveform.style.display = state === 'playing' ? 'flex' : 'none';
+            micBtn.className = 'mic-button ' + (state === 'recording' ? 'recording' : '');
+            micIcon.style.display = (state === 'recording' || state === 'idle') ? 'block' : 'none';
+            waveform.style.display = (state === 'recording') ? 'flex' : 'none';
+            aura.className = 'aura-ring ' + (state === 'speaking' ? 'aura-active' : '');
             
-            if (state === 'processing') statusText.innerText = "Thinking...";
-            if (state === 'playing') statusText.innerText = "Aira is speaking...";
-            if (state === 'idle') statusText.innerText = "Click to speak";
-            
-            micBtn.disabled = (state === 'processing' || state === 'playing');
+            statusDisplay.innerText = {
+                'idle': 'Click to speak',
+                'recording': 'Listening...',
+                'processing': 'Aira is thinking...',
+                'speaking': 'Aira is speaking...'
+            }[state];
         }
 
-        function playAudio(base64) {
-            return new Promise((resolve) => {
-                const audio = new Audio("data:audio/wav;base64," + base64);
-                setUIState('playing');
-                audio.onended = () => {
-                    setUIState('idle');
-                    resolve();
-                };
-                audio.onerror = () => {
-                    setUIState('idle');
-                    resolve();
-                };
-                audio.play();
-            });
+        async function greet() {
+            try {
+                const res = await fetch(`/greet?session_id=${sessionId}`);
+                const data = await res.json();
+                addMessage(data.text, 'aira-msg');
+                if (data.audio_base64) playAudio(data.audio_base64);
+            } catch (e) {
+                addMessage("Hi! I'm Aira from Psycholab. How can I help you?", 'aira-msg');
+            }
         }
 
-        function resetSession() {
+        function resetApp() {
             fetch(`/reset/${sessionId}`).then(() => {
-                chatLog.innerHTML = "";
+                chatContainer.innerHTML = "";
                 greet();
+                toggleSettings();
             });
         }
+
+        window.onload = () => setTimeout(greet, 800);
+
     </script>
 </body>
 </html>

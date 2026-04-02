@@ -9,6 +9,10 @@ import time
 import logging
 import re
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+MOCK_MODE = os.getenv("MOCK_MODE", "False").lower() == "true"
 
 # [THINK] Coqui is high quality but heavy. pyttsx3 is instant but robotic.
 # [THINK] Clean text is vital: '---' or '*' in text makes TTS sound glitchy.
@@ -69,6 +73,10 @@ class TextToSpeech:
 
     def synthesize(self, text: str) -> bytes:
         """Converts text to audio bytes (WAV)."""
+        if MOCK_MODE:
+            logger.info(f"Mock TTS: {text}")
+            return b"" # Return empty to skip audio playing in frontend during mock
+
         text = self.clean_text(text)
         if not text:
             return b""

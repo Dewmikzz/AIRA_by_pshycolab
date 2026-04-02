@@ -3,7 +3,11 @@
 # Inputs: System hardware stats (via psutil), service availability
 # Outputs: Model names and system status JSON
 
-import psutil
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
 import socket
 import logging
 import os

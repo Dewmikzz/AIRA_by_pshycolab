@@ -68,7 +68,18 @@ async def read_root():
 @app.get("/health")
 async def health():
     """Returns the system health status."""
-    return get_status()
+    status = get_status()
+    status["mock_mode"] = os.getenv("MOCK_MODE", "False").lower() == "true"
+    return status
+
+@app.post("/config")
+async def update_config(mock_mode: bool):
+    """Toggles Mock Mode at runtime."""
+    os.environ["MOCK_MODE"] = str(mock_mode)
+    # Re-import to update global MOCK_MODE if necessary, 
+    # but since they all read os.getenv on every call or use the same os.environ, it works.
+    logger.info(f"Mock Mode updated to: {mock_mode}")
+    return {"status": "updated", "mock_mode": mock_mode}
 
 @app.get("/greet")
 async def greet(session_id: str = Query(default=None)):

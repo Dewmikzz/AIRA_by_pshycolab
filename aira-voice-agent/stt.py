@@ -3,12 +3,21 @@
 # Inputs: Audio file (bytes) in various formats (WebM, WAV, etc.)
 # Outputs: Transcribed text string
 
-import whisper
+try:
+    import whisper
+    WHISPER_AVAILABLE = True
+except ImportError:
+    WHISPER_AVAILABLE = False
 import os
 import tempfile
 import time
 from pydub import AudioSegment
 import logging
+import random
+from dotenv import load_dotenv
+
+load_dotenv()
+MOCK_MODE = os.getenv("MOCK_MODE", "False").lower() == "true"
 
 # [THINK] Browsers record in WebM (Opus), but Whisper prefers WAV/MP3.
 # [THINK] ffmpeg must be on the path for pydub to work correctly.
@@ -24,6 +33,10 @@ class SpeechToText:
 
     def load_model(self):
         """Loads the Whisper model into memory."""
+        if not WHISPER_AVAILABLE:
+            logger.warning("Whisper is not installed. Skipping model load.")
+            return
+
         if self.model is None:
             logger.info(f"Loading Whisper model: {self.model_name}...")
             start_time = time.time()
@@ -32,6 +45,21 @@ class SpeechToText:
 
     def transcribe(self, audio_bytes: bytes, file_ext: str = "webm") -> str:
         """Converts audio bytes to text."""
+        if MOCK_MODE:
+            mock_phrases = [
+                "Hello, can you tell me more about Psycholab?",
+                "I need a website for my business.",
+                "How much does a mobile app cost?",
+                "Where is your office located?",
+                "My name is John Doe, I need technical support."
+            ]
+            time.sleep(1.0) # Simulate processing
+            return random.choice(mock_phrases)
+
+        if not WHISPER_AVAILABLE:
+            logger.error("Whisper is not available. Speech transcription disabled.")
+            return "__error__"
+
         self.load_model()
         
         with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}") as temp_audio:
