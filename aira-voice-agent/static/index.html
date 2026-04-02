@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aira — Psycholab AI Receptionist</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --card-bg: #141414;
+            --accent: #7C3AED;
+            --text-primary: #f5f5f5;
+            --text-muted: #888;
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg-color);
+            color: var(--text-primary);
+            font-family: system-ui, -apple-system, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            padding: 20px;
+            background: var(--card-bg);
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: #888; display: inline-block; margin-right: 8px;
+        }
+        .status-dot.online { background: #10B981; box-shadow: 0 0 10px #10B981; }
+        .status-dot.offline { background: #EF4444; }
+
+        /* Chat Log */
+        #chat-log {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+        .user-msg {
+            align-self: flex-end;
+            background: var(--accent);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .aira-msg {
+            align-self: flex-start;
+            background: #222;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Controls */
+        .controls {
+            padding: 40px 20px;
+            background: linear-gradient(to top, var(--card-bg), transparent);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #mic-btn {
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        #mic-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .waveform {
+            display: flex; align-items: center; gap: 3px; position: absolute;
+        }
+        .waveform span {
+            width: 4px; height: 15px; background: white; border-radius: 2px;
+            animation: bounce 1s infinite ease-in-out;
+        }
+        .waveform span:nth-child(2) { animation-delay: 0.1s; }
+        .waveform span:nth-child(3) { animation-delay: 0.2s; }
+
+        @keyframes bounce {
+            0%, 100% { height: 10px; }
+            50% { height: 30px; }
+        }
+
+        #status-text { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .recording { animation: pulse 1.5s infinite; background: #EF4444 !important; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+        .spinner {
+            width: 30px; height: 30px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        footer {
+            padding: 10px; text-align: center; font-size: 0.7rem; color: #444; border-top: 1px solid #111;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <span id="health-dot" class="status-dot"></span>
+            <strong>Aira</strong> · Psycholab AI
+        </div>
+        <button onclick="resetSession()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.8rem;">Reset Session</button>
+    </header>
+
+    <div id="chat-log"></div>
+
+    <div class="controls">
+        <button id="mic-btn">
+            <svg id="mic-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+            <div id="spinner" class="spinner" style="display:none;"></div>
+            <div id="waveform" class="waveform" style="display:none;">
+                <span></span><span></span><span></span><span></span>
+            </div>
+        </button>
+        <div id="status-text">Click to speak</div>
+    </div>
+
+    <footer>Powered by Psycholab · Local AI Environment</footer>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let sessionId = sessionStorage.getItem('sessionId') || crypto.randomUUID();
+        sessionStorage.setItem('sessionId', sessionId);
+        
+        let audioContext;
+        let analyser;
+        let silenceStartTime = null;
+        const SILENCE_THRESHOLD = 0.01;
+        const SILENCE_DURATION = 2500; // 2.5 seconds
+        
+        const chatLog = document.getElementById('chat-log');
+        const micBtn = document.getElementById('mic-btn');
+        const statusText = document.getElementById('status-text');
+        const micIcon = document.getElementById('mic-icon');
+        const spinner = document.getElementById('spinner');
+        const waveform = document.getElementById('waveform');
+        const healthDot = document.getElementById('health-dot');
+
+        // 1. Initial Health Check
+        async function checkHealth() {
+            try {
+                const res = await fetch('/health');
+                const data = await res.json();
+                healthDot.classList.add(data.ready ? 'online' : 'offline');
+            } catch (e) {
+                healthDot.classList.add('offline');
+            }
+        }
+        checkHealth();
+
+        // 2. Greeting Logic
+        async function greet() {
+            addMessage("Aira is greeting you...", 'aira-msg', true);
+            try {
+                const res = await fetch(`/greet?session_id=${sessionId}`);
+                const data = await res.json();
+                clearLastMessage();
+                addMessage(data.text, 'aira-msg');
+                playAudio(data.audio_base64);
+            } catch (e) {
+                clearLastMessage();
+                addMessage("Hi! I'm Aira from Psycholab. How can I help you?", 'aira-msg');
+            }
+        }
+        setTimeout(greet, 1000);
+
+        // 3. Mic Handling
+        micBtn.onclick = () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        };
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+                
+                audioChunks = [];
+                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                mediaRecorder.onstop = sendAudio;
+
+                // Silence detection
+                audioContext = new AudioContext();
+                const source = audioContext.createMediaStreamSource(stream);
+                analyser = audioContext.createAnalyser();
+                source.connect(analyser);
+                detectSilence();
+
+                mediaRecorder.start();
+                micBtn.classList.add('recording');
+                statusText.innerText = "Listening...";
+                statusText.style.color = "#EF4444";
+            } catch (err) {
+                console.error("Mic error:", err);
+                statusText.innerText = "Mic access denied";
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                micBtn.classList.remove('recording');
+                silenceStartTime = null;
+            }
+        }
+
+        function detectSilence() {
+            if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+            
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteTimeDomainData(dataArray);
+            
+            let sum = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                const val = (dataArray[i] - 128) / 128;
+                sum += val * val;
+            }
+            const volume = Math.sqrt(sum / bufferLength);
+
+            if (volume < SILENCE_THRESHOLD) {
+                if (!silenceStartTime) silenceStartTime = Date.now();
+                if (Date.now() - silenceStartTime > SILENCE_DURATION) {
+                    stopRecording();
+                    return;
+                }
+            } else {
+                silenceStartTime = null;
+            }
+            requestAnimationFrame(detectSilence);
+        }
+
+        async function sendAudio() {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            if (audioBlob.size < 500) {
+                statusText.innerText = "I didn't hear anything";
+                return;
+            }
+
+            setUIState('processing');
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'speech.webm');
+            formData.append('session_id', sessionId);
+
+            try {
+                const res = await fetch('/talk', { method: 'POST', body: formData });
+                const data = await res.json();
+                
+                addMessage(data.transcript, 'user-msg');
+                addMessage(data.reply, 'aira-msg');
+                
+                if (data.audio_base64) {
+                    await playAudio(data.audio_base64);
+                } else {
+                    setUIState('idle');
+                }
+            } catch (err) {
+                console.error("Pipeline error:", err);
+                statusText.innerText = "Connection error";
+                setUIState('idle');
+            }
+        }
+
+        // 4. UI Helpers
+        function addMessage(text, className, isTemporary = false) {
+            const div = document.createElement('div');
+            div.className = `message ${className}`;
+            if (isTemporary) div.id = 'temp-msg';
+            div.innerText = text;
+            chatLog.appendChild(div);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function clearLastMessage() {
+            const tempMsg = document.getElementById('temp-msg');
+            if (tempMsg) tempMsg.remove();
+        }
+
+        function setUIState(state) {
+            micIcon.style.display = state === 'idle' ? 'block' : 'none';
+            spinner.style.display = state === 'processing' ? 'block' : 'none';
+            waveform.style.display = state === 'playing' ? 'flex' : 'none';
+            
+            if (state === 'processing') statusText.innerText = "Thinking...";
+            if (state === 'playing') statusText.innerText = "Aira is speaking...";
+            if (state === 'idle') statusText.innerText = "Click to speak";
+            
+            micBtn.disabled = (state === 'processing' || state === 'playing');
+        }
+
+        function playAudio(base64) {
+            return new Promise((resolve) => {
+                const audio = new Audio("data:audio/wav;base64," + base64);
+                setUIState('playing');
+                audio.onended = () => {
+                    setUIState('idle');
+                    resolve();
+                };
+                audio.onerror = () => {
+                    setUIState('idle');
+                    resolve();
+                };
+                audio.play();
+            });
+        }
+
+        function resetSession() {
+            fetch(`/reset/${sessionId}`).then(() => {
+                chatLog.innerHTML = "";
+                greet();
+            });
+        }
+    </script>
+</body>
+</html>

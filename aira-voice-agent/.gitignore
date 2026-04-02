@@ -1,0 +1,26 @@
+# ═══ FILE: .gitignore ═══
+# Purpose: Specify files to ignore in Git version control
+# Inputs: Wildcard patterns
+# Outputs: Restricted Git indexing
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# Models & Data
+*.wav
+*.mp3
+*.webm
+data/*.json
+data/sessions/
+models/
+
+# System
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
