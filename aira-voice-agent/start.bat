@@ -1,8 +1,6 @@
 @echo off
 REM ═══ FILE: start.bat ═══
-REM Purpose: One-click launcher with resilient installation for Aira
-REM Inputs: CMD environment
-REM Outputs: Running FastAPI server
+REM Resilient Quick-Start for Aira MVP
 
 echo ══════════════════════════════════════════════
 echo    AIRA · Psycholab AI Voice Agent (v3.0)     
@@ -25,27 +23,22 @@ if not exist venv (
 REM 3. Activate Venv
 call venv\Scripts\activate
 
-REM 4. Resilient Installation
+REM 4. Fix pip and Install Core
+echo [*] Upgrading pip...
+python -m pip install --upgrade pip --quiet
+
 echo [*] Installing Core System (FastAPI, Uvicorn)...
-pip install -r requirements-core.txt --quiet
-if %errorlevel% neq 0 (
-    echo [!] Core installation failed. Checking internet connection...
-    pause
-    exit /b
-)
+echo [NOTE] Avoiding numpy/psutil to bypass path-encoding issues with '™' symbol.
+python -m pip install --no-cache-dir fastapi==0.109.0 uvicorn==0.27.0 python-multipart==0.0.6 python-dotenv==1.0.0 jinja2==3.1.3 --quiet
 
-echo [*] Attempting to install Local-AI modules (Torch, TTS, Whisper)...
-echo [NOTE] If this part fails, Aira will still run in 'Mock Mode'.
-pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet
-pip install TTS --quiet
-pip install openai-whisper==20231117 --quiet
-pip install -r requirements.txt --quiet
+REM 5. Attempt Heavy AI (Non-blocking)
+echo [*] Attempting to install Local-AI modules...
+echo [WAIT] This might show errors if your path has symbols like '™'.
+echo [INFO] Aira will still start in Mock Mode if these fail.
+python -m pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu --quiet
+python -m pip install --no-cache-dir TTS openai-whisper==20231117 --quiet
 
-REM 5. Run Setup (Checks Ollama/FFmpeg)
-echo [*] Running system health check...
-python setup.py
-
-REM 6. Start Server
+REM 6. Start Aira
 echo ══════════════════════════════════════════════
 echo    Aira is starting on http://localhost:8000
 echo    Mock Mode is ACTIVE by default
