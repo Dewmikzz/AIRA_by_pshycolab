@@ -98,16 +98,22 @@ class AiraAgent:
         self.api_key = GROQ_API_KEY
         self.url = "https://api.groq.com/openai/v1/chat/completions"
 
-    async def ask(self, user_text: str, session_id: str) -> str:
-        if not self.api_key: return "I need a Groq key to think."
+    async def ask(self, user_text: str, session_id: str = "default", history: list = None) -> tuple[str, list]:
+        if not self.api_key: return "I need a Groq key to think.", []
         
-        # [NEW] Strictly follow the introduction greeting
+        # [NEW] Strictly follow the introduction greeting (Stateless History FIX)
         if user_text.lower() == "greet":
-            return "Hello, I am AIRA, the AI assistant from PshycoLab Sri Lanka. How can I help you today?"
+            reply = "Hello, I am AIRA, the AI assistant from PshycoLab Sri Lanka. How can I help you today?"
+            return reply, [{"role": "assistant", "content": reply}]
 
-        history = memory.get(session_id)
+        # Determine if we use stateless or stateful history
+        if history is not None:
+            current_history = history
+        else:
+            current_history = memory.get(session_id)
+
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-        for h in history[-8:]: # Increased memory window for better inquiry flow
+        for h in current_history[-8:]: 
             messages.append({"role": h["role"], "content": h["content"]})
         messages.append({"role": "user", "content": user_text})
 
@@ -116,19 +122,31 @@ class AiraAgent:
                 response = await client.post(
                     self.url,
                     headers={"Authorization": f"Bearer {self.api_key}"},
-                    json={"model": GROQ_MODEL, "messages": messages, "temperature": 0.7},
+                    json={
+                        "model": GROQ_MODEL, 
+                        "messages": messages, 
+                        "temperature": 0.7,
+                        "top_p": 0.9,
+                        "frequency_penalty": 0.3
+                    },
                     timeout=12.0
                 )
                 
                 result = response.json()
                 reply = result["choices"][0]["message"]["content"].strip()
                 
-                # Update memory
-                memory.add(session_id, "user", user_text)
-                memory.add(session_id, "assistant", reply)
-                return reply
+                # Update memory (stateless vs stateful)
+                if history is not None:
+                    updated_history = memory.append_stateless(history, "user", user_text)
+                    updated_history = memory.append_stateless(updated_history, "assistant", reply)
+                    return reply, updated_history
+                else:
+                    memory.add(session_id, "user", user_text)
+                    memory.add(session_id, "assistant", reply)
+                    return reply, memory.get(session_id)
+
         except Exception as e:
             logger.error(f"Groq Error: {e}")
-            return "I’m not completely sure about that, but I will forward your request to our team at PshycoLab and they will assist you."
+            return "I’m not completely sure about that, but I will forward your request to our team at PshycoLab and they will assist you.", history or []
 
 agent = AiraAgent()

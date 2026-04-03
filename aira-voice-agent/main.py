@@ -12,6 +12,14 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from pydantic import BaseModel
+from typing import List, Optional
+
+class VoiceRequest(BaseModel):
+    audio: Optional[str] = None # Base64 encoded audio
+    text: Optional[str] = None # Direct text input
+    history: List[dict] = []
+    session_id: Optional[str] = "default"
 
 # Import Production Cloud Modules
 from stt import stt
@@ -43,15 +51,51 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 async def read_root():
     return FileResponse("static/index.html")
 
+@app.post("/api/voice")
+async def voice_api(request: VoiceRequest):
+    try:
+        # Check for direct text first (e.g. for greetings)
+        transcript = request.text
+        logger.info(f"API Request | Session: {request.session_id} | History: {len(request.history)} | Text: {transcript}")
+        
+        if not transcript and request.audio:
+            # 1. Decode Audio
+            actual_audio = base64.b64decode(request.audio)
+            
+            # 2. STT
+            transcript = await stt.transcribe(actual_audio)
+            if transcript in ["__silence__", "__error__"]:
+                return {"error": "No speech detected", "history": request.history}
+            
+        if not transcript:
+            return {"error": "No input provided", "history": request.history}
+            
+        # 3. Agent (Stateless)
+        reply_text, updated_history = await agent.ask(transcript, history=request.history)
+        
+        # 4. TTS
+        reply_audio = await tts.synthesize(reply_text)
+        reply_b64 = base64.b64encode(reply_audio).decode("utf-8") if reply_audio else ""
+        
+        return {
+            "transcript": transcript,
+            "reply_text": reply_text,
+            "reply_audio": reply_b64,
+            "history": updated_history
+        }
+    except Exception as e:
+        logger.error(f"API Error: {e}")
+        return {"error": str(e)}
+
 @app.websocket("/voice-call")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     session_id = str(uuid.uuid4())
     logger.info(f"New Voice Call started: {session_id}")
     
-    # 1. Send Aira's greeting immediately!
     try:
-        greeting_text = await agent.ask("greet", session_id)
+        # 1. Send Aira's greeting immediately!
+        greeting_text, _ = await agent.ask("greet", session_id)
         greeting_audio = await tts.synthesize(greeting_text)
         greeting_b64 = base64.b64encode(greeting_audio).decode("utf-8") if greeting_audio else ""
         
@@ -76,8 +120,6 @@ async def websocket_endpoint(websocket: WebSocket):
                 # Simple threshold for processing (e.g. 500ms of audio)
                 if len(audio_buffer) > 16000: # 1 second at 16k mono
                     # Check for silence or send for processing
-                    # In this manual MVP, we process on every small batch 
-                    # but real VAD would be better on the frontend.
                     pass 
 
             elif "text" in msg:
@@ -97,7 +139,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         continue
                     
                     await websocket.send_json({"type": "transcript", "text": transcript})
-                    reply_text = await agent.ask(transcript, session_id)
+                    reply_text, _ = await agent.ask(transcript, session_id)
                     await websocket.send_json({"type": "reply_text", "text": reply_text})
                     
                     await websocket.send_json({"type": "status", "state": "speaking"})
@@ -120,7 +162,6 @@ async def websocket_endpoint(websocket: WebSocket):
         memory.reset(session_id)
     except Exception as e:
         logger.error(f"WebSocket Error: {e}")
-        # Send error to UI so user knows what's happening
         try:
             await websocket.send_json({"type": "error", "message": f"Engine Error: {str(e)}"})
         except: pass

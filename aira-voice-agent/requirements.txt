@@ -9,5 +9,6 @@ httpx==0.27.0
 edge-tts==6.1.10
 psutil==5.9.8
 pydub==0.25.1
+gTTS==2.5.1
 jinja2==3.1.3
 # Groq & OpenRouter use httpx for lowest latency
