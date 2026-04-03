@@ -44,10 +44,8 @@
         .stage { position: absolute; width: 100%; max-width: 1400px; padding: 0 40px; display: none; opacity: 0; transition: all 0.6s ease; transform: scale(0.98); }
         .stage.active { display: block; opacity: 1; transform: scale(1); }
 
-        /* --- Home: Cinematic --- */
         .home-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 100px; align-items: center; }
         .hero-visual img { width: 100%; max-width: 600px; height: auto; animation: float 6s infinite ease-in-out; }
-        
         .hero-text h2 { font-size: 7rem; font-weight: 900; line-height: 0.85; margin-bottom: 20px; letter-spacing: -6px; }
         .hero-text p { font-size: 1.1rem; line-height: 1.6; color: var(--text-dim); margin-bottom: 40px; text-transform: uppercase; letter-spacing: 4px; font-weight: 700; }
         .hero-text b { color: var(--primary); }
@@ -55,16 +53,12 @@
         .btn-discover { background: transparent; border: 2px solid var(--primary); color: var(--primary); padding: 20px 45px; border-radius: 50px; font-weight: 900; font-size: 1.1rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 2px; }
         .btn-discover:disabled { opacity: 0.5; border-color: #333; color: #333; cursor: default; }
 
-        /* --- About & Contact Page Content & Animations --- */
         .page-title { text-align: center; margin-bottom: 50px; opacity: 0; transform: translateY(-20px); animation: slideTitle 0.8s forwards; }
         .page-title h2 { font-size: 4.5rem; font-weight: 900; letter-spacing: -3px; }
         .page-title i { color: var(--primary); font-style: normal; }
 
         .content-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
-        .glass-card { 
-            background: var(--surface); border: 1px solid var(--border); padding: 45px; 
-            border-radius: 32px; transition: 0.3s; height: 100%; opacity: 0; transform: translateY(30px);
-        }
+        .glass-card { background: var(--surface); border: 1px solid var(--border); padding: 45px; border-radius: 32px; transition: 0.3s; height: 100%; opacity: 0; transform: translateY(30px); }
         .glass-card:nth-child(1) { animation: cardIn 0.8s 0.2s forwards; }
         .glass-card:nth-child(2) { animation: cardIn 0.8s 0.4s forwards; }
         .glass-card:nth-child(3) { animation: cardIn 0.8s 0.6s forwards; }
@@ -73,20 +67,13 @@
         .glass-card h3 { font-size: 1.4rem; margin-bottom: 15px; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; }
         .glass-card p { color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; }
 
-        .btn-lab { 
-            display: inline-block; margin-top: 40px; background: var(--primary); color: #000; 
-            padding: 15px 40px; border-radius: 40px; font-weight: 900; font-size: 0.9rem; 
-            text-transform: uppercase; letter-spacing: 2px; text-decoration: none; 
-            box-shadow: 0 10px 20px var(--primary-glow); transition: 0.3s;
-        }
+        .btn-lab { display: inline-block; margin-top: 40px; background: var(--primary); color: #000; padding: 15px 40px; border-radius: 40px; font-weight: 900; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; text-decoration: none; box-shadow: 0 10px 20px var(--primary-glow); transition: 0.3s; }
         .btn-lab:hover { transform: scale(1.05); box-shadow: 0 15px 35px var(--primary-glow); }
 
-        /* --- Pinned Footer --- */
         footer { padding: 30px 80px; display: flex; justify-content: space-between; border-top: 1px solid var(--border); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #555; flex-shrink: 0; background: #000; }
         footer a { color: var(--primary); text-decoration: none; font-weight: 700; transition: 0.3s; }
         footer a:hover { color: #FFF; }
 
-        /* --- Animations --- */
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
         @keyframes slideTitle { to { opacity: 1; transform: translateY(0); } }
         @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
@@ -96,56 +83,39 @@
             position: fixed; bottom: -100%; left: 0; width: 100vw; height: 100vh; 
             background: rgba(0,0,0,0.92); backdrop-filter: blur(40px); z-index: 2000; 
             display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
-            padding: 100px 30px; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
+            padding: 80px 30px; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
         }
         #call-overlay.active { bottom: 0; }
         
         .timer-group { text-align: center; }
-        .timer-group h3 { font-size: 2.2rem; font-weight: 700; color: #FFF; margin-bottom: 5px; letter-spacing: -1px; }
-        .timer-group #timer { font-size: 1rem; color: #999; font-weight: 500; }
+        .timer-group h3 { font-size: 2.2rem; font-weight: 700; color: #FFF; margin-bottom: 5px; letter-spacing: -2px; }
+        .timer-group #timer { font-size: 0.9rem; color: #888; font-weight: 500; font-family: 'Roboto Mono', monospace; }
         
-        .status-pill { background: #333; color: var(--primary); padding: 8px 25px; border-radius: 20px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-top: 15px; }
+        .status-pill { background: #1A1A1A; color: var(--primary); padding: 10px 25px; border-radius: 40px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-top: 15px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+        .mic-dot { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; opacity: 0; transition: 0.2s; }
+        .mic-dot.active { opacity: 1; box-shadow: 0 0 10px var(--primary); }
+
+        .visualizer { display: flex; gap: 8px; height: 40px; align-items: center; margin: 40px 0; }
+        .visualizer div { width: 5px; height: 20px; background: var(--primary); border-radius: 5px; transition: height 0.1s cubic-bezier(0.25, 0.1, 0.25, 1); }
         
-        .visualizer { display: flex; gap: 8px; height: 30px; align-items: center; margin: 40px 0; }
-        .visualizer div { width: 4px; height: 20px; background: var(--primary); border-radius: 4px; transition: height 0.1s; }
-        
-        .opt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px 30px; justify-items: center; width: 100%; max-width: 400px; }
-        .opt-btn { 
-            width: 80px; height: 80px; border-radius: 50%; border: none; 
-            background: rgba(255,255,255,0.1); cursor: pointer; display: flex; 
-            flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; 
-        }
-        .opt-btn svg { fill: #FFF; width: 30px; height: 30px; }
-        .opt-btn span { position: absolute; bottom: -25px; font-size: 0.7rem; color: #FFF; opacity: 0.7; width: 100px; text-align: center; }
-        .opt-btn:hover { background: rgba(255,255,255,0.2); }
-        .opt-btn.active { background: #FFF; }
+        .opt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px 40px; justify-items: center; width: 100%; max-width: 400px; }
+        .opt-btn { width: 80px; height: 80px; border-radius: 50%; border: none; background: rgba(255,255,255,0.08); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; }
+        .opt-btn svg { fill: #FFF; width: 28px; height: 28px; }
+        .opt-btn span { position: absolute; bottom: -28px; font-size: 0.7rem; color: #FFF; opacity: 0.6; width: 100px; text-align: center; }
+        .opt-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.05); }
+        .opt-btn.active { background: #FFF; scale: 1.1; }
         .opt-btn.active svg { fill: #000; }
-        .opt-btn.active span { opacity: 1; }
+        .opt-btn.active span { opacity: 1; font-weight: 700; }
         .btn-wrap { position: relative; display: flex; justify-content: center; width: 80px; }
 
-        #t-box { width: 90%; max-width: 400px; max-height: 80px; overflow-y: auto; text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 15px; margin: 20px 0; display: none; font-size: 0.8rem; color: #FFF; }
+        #t-box { width: 95%; max-width: 450px; height: 100px; overflow-y: auto; text-align: center; padding: 20px; background: rgba(255,255,255,0.04); border-radius: 24px; margin: 20px 0; display: none; font-size: 0.85rem; color: #EEE; line-height: 1.4; }
+        .t-line { margin-bottom: 8px; opacity: 0; animation: fadeIn 0.3s forwards; }
+        .t-line b { color: var(--primary); margin-right: 5px; }
+        @keyframes fadeIn { to { opacity: 1; } }
 
-        .hangup-btn { 
-            width: 90px; height: 90px; border-radius: 50%; background: var(--danger); 
-            border: none; cursor: pointer; transition: 0.3s; display: flex; 
-            align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(255, 30, 30, 0.4); 
-            margin-bottom: 20px;
-        }
-        .hangup-btn:hover { transform: scale(1.1); }
+        .hangup-btn { width: 95px; height: 95px; border-radius: 50%; background: var(--danger); border: none; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; box-shadow: 0 15px 35px rgba(255, 30, 30, 0.4); margin-bottom: 20px; }
+        .hangup-btn:hover { transform: scale(1.15) rotate(135deg); }
         .hangup-btn svg { fill: #FFF; width: 45px; height: 45px; }
-
-        @media (max-width: 1024px) {
-            header { padding: 15px 30px; }
-            .branding h1 { font-size: 1.8rem; }
-            nav { display: none; }
-            main { padding: 20px; align-items: flex-start; margin-top: 20px; }
-            .stage { padding: 10px; }
-            .home-grid { grid-template-columns: 1fr; text-align: center; gap: 30px; }
-            .hero-visual img { max-width: 300px; }
-            .hero-text h2 { font-size: 4rem; letter-spacing: -2px; }
-            .content-grid { grid-template-columns: 1fr; gap: 20px; overflow-y: auto; max-height: 50vh; }
-            footer { padding: 20px; flex-direction: column; gap: 10px; text-align: center; font-size: 0.6rem; }
-        }
     </style>
 </head>
 <body>
@@ -164,12 +134,9 @@
     </header>
 
     <main>
-        <!-- STAGE: HOME -->
         <div id="home" class="stage active">
             <div class="home-grid">
-                <div class="hero-visual">
-                    <img src="/static/aira_vector.png" alt="Aira Vector Robot">
-                </div>
+                <div class="hero-visual"><img src="/static/aira_vector.png" alt="Aira Vector Robot"></div>
                 <div class="hero-text">
                     <h2>AiRA v1</h2>
                     <p>Experience the <b>neural excellence</b> of the world's leading voice agent by PshycoLab.</p>
@@ -178,46 +145,21 @@
             </div>
         </div>
 
-        <!-- STAGE: ABOUT -->
         <div id="about" class="stage">
-            <div class="page-title">
-                <h2>Neural <i>Intelligence</i></h2>
-            </div>
+            <div class="page-title"><h2>Neural <i>Intelligence</i></h2></div>
             <div class="content-grid">
-                <div class="glass-card">
-                    <h3>Cognitive Logic</h3>
-                    <p>AiRA is powered by the Llama 3.3 70B core, providing human-grade reasoning and complex problem-solving capabilities at the speed of thought.</p>
-                </div>
-                <div class="glass-card">
-                    <h3>Voice Synthesis</h3>
-                    <p>Utilizing premium neural pipelines, AiRA speaks with natural inflection and ultra-low latency, creating seamless, life-like interactions.</p>
-                </div>
-                <div class="glass-card">
-                    <h3>Pshyco Lab™</h3>
-                    <p>Orchestrated by senior architects at Pshyco Lab™ Sri Lanka. We specialize in building mission-critical AI systems for global enterprises.</p>
-                </div>
+                <div class="glass-card"><h3>Cognitive Logic</h3><p>AiRA is powered by the Llama 3.3 70B core, providing human-grade reasoning and complex problem-solving capabilities at the speed of thought.</p></div>
+                <div class="glass-card"><h3>Voice Synthesis</h3><p>Utilizing premium neural pipelines, AiRA speaks with natural inflection and ultra-low latency, creating seamless, life-like interactions.</p></div>
+                <div class="glass-card"><h3>Pshyco Lab™</h3><p>Orchestrated by senior architects at Pshyco Lab™ Sri Lanka. We specialize in building mission-critical AI systems for global enterprises.</p></div>
             </div>
         </div>
 
-        <!-- STAGE: CONTACT -->
         <div id="contact" class="stage">
-            <div class="page-title">
-                <h2>Get <i>In Touch</i></h2>
-            </div>
+            <div class="page-title"><h2>Get <i>In Touch</i></h2></div>
             <div class="content-grid">
-                <div class="glass-card">
-                    <h3>Direct Email</h3>
-                    <p>hello@pshycolab.com<br>support@aira.tech</p>
-                </div>
-                <div class="glass-card">
-                    <h3>Innovation Hub</h3>
-                    <p>Level 12, Pshyco Lab™ Plaza,<br>Colombo 07, Sri Lanka.</p>
-                </div>
-                <div class="glass-card">
-                    <h3>Global Studio</h3>
-                    <p>Access our full range of AI solutions and enterprise services via our primary studio portal.</p>
-                    <a href="https://pshycolab.com" target="_blank" class="btn-lab">Visit Studio</a>
-                </div>
+                <div class="glass-card"><h3>Direct Email</h3><p>hello@pshycolab.com<br>support@aira.tech</p></div>
+                <div class="glass-card"><h3>Innovation Hub</h3><p>Level 12, Pshyco Lab™ Plaza,<br>Colombo 07, Sri Lanka.</p></div>
+                <div class="glass-card"><h3>Global Studio</h3><p>Access our full range of AI solutions and enterprise services via our primary studio portal.</p><a href="https://pshycolab.com" target="_blank" class="btn-lab">Visit Studio</a></div>
             </div>
         </div>
     </main>
@@ -227,12 +169,14 @@
         <div>&copy; 2026 <a href="https://pshycolab.com" target="_blank">Pshyco Lab™</a> | All Rights Reserved</div>
     </footer>
 
-    <!-- IPHONE PRO CALL OVERLAY -->
     <div id="call-overlay">
         <div class="timer-group">
             <h3>aira</h3>
             <div id="timer">00:00</div>
-            <div class="status-pill" id="c-status">Connecting</div>
+            <div class="status-pill">
+                <div class="mic-dot" id="m-dot"></div>
+                <span id="c-status">Connecting</span>
+            </div>
         </div>
         
         <div class="visualizer" id="vis">
@@ -240,60 +184,27 @@
         </div>
 
         <div class="opt-grid">
-            <div class="btn-wrap">
-                <button class="opt-btn" id="mute-btn" onclick="toggleMute()">
-                    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-                    <span>Mute</span>
-                </button>
-            </div>
-            <div class="btn-wrap">
-                <button class="opt-btn" onclick="toggleOption(this)">
-                    <svg viewBox="0 0 24 24"><path d="M7 2h10c1.1 0 2 .9 2 2v16c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2zm0 2v16h10V4H7zm2 2h2v2H9V6zm4 0h2v2h-2V6zm-4 4h2v2H9v-2zm4 0h2v2h-2v-2zm-4 4h2v2H9v-2zm4 0h2v2h-2v-2z"/></svg>
-                    <span>Keypad</span>
-                </button>
-            </div>
-            <div class="btn-wrap">
-                <button class="opt-btn" onclick="toggleOption(this)">
-                    <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-                    <span>Speaker</span>
-                </button>
-            </div>
-            <div class="btn-wrap">
-                <button class="opt-btn" id="trans-btn" onclick="toggleTranscript()">
-                    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-                    <span>Add Call</span>
-                </button>
-            </div>
-            <div class="btn-wrap">
-                <button class="opt-btn" onclick="toggleOption(this)">
-                    <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-                    <span>Video</span>
-                </button>
-            </div>
-            <div class="btn-wrap">
-                <button class="opt-btn" onclick="toggleOption(this)">
-                    <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                    <span>Contacts</span>
-                </button>
-            </div>
+            <div class="btn-wrap"><button class="opt-btn" id="mute-btn" onclick="toggleMute()"><svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg><span>Mute</span></button></div>
+            <div class="btn-wrap"><button class="opt-btn" onclick="toggleOption(this)"><svg viewBox="0 0 24 24"><path d="M7 2h10c1.1 0 2 .9 2 2v16c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2zm0 2v16h10V4H7zm2 2h2v2H9V6zm4 0h2v2h-2V6zm-4 4h2v2H9v-2zm4 0h2v2h-2v-2zm-4 4h2v2H9v-2zm4 0h2v2h-2v-2z"/></svg><span>Keypad</span></button></div>
+            <div class="btn-wrap"><button class="opt-btn" onclick="toggleOption(this)"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg><span>Speaker</span></button></div>
+            <div class="btn-wrap"><button class="opt-btn" id="trans-btn" onclick="toggleTranscript()"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg><span>Add Call</span></button></div>
+            <div class="btn-wrap"><button class="opt-btn" onclick="toggleOption(this)"><svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Video</span></button></div>
+            <div class="btn-wrap"><button class="opt-btn" onclick="toggleOption(this)"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Contacts</span></button></div>
         </div>
 
         <div id="t-box"></div>
 
-        <button class="hangup-btn" onclick="endCall()">
-            <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-        </button>
+        <button class="hangup-btn" onclick="endCall()"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button>
     </div>
 
     <script>
         let audioCtx; let proc; let timer; let isCall = false; 
         let isSpeaking = false; let silenceStart = Date.now();
         let isMuted = false; let showTrans = false;
-        let activeAudio = null;
-        let pcmBuffer = [];
-        let conversationHistory = [];
+        let activeAudio = null; let pcmBuffer = []; let conversationHistory = [];
 
         const status = document.getElementById('c-status');
+        const mDot = document.getElementById('m-dot');
         const overlay = document.getElementById('call-overlay');
         const tBox = document.getElementById('t-box');
         const cBtnNav = document.getElementById('btn-call-nav');
@@ -303,8 +214,7 @@
             document.querySelectorAll('.stage').forEach(s => { s.style.opacity = '0'; setTimeout(()=>s.classList.remove('active'), 300); });
             document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
             setTimeout(() => {
-                const ns = document.getElementById(p);
-                ns.classList.add('active');
+                const ns = document.getElementById(p); ns.classList.add('active');
                 setTimeout(()=> ns.style.opacity = '1', 10);
                 document.getElementById('n-'+p).classList.add('active');
             }, 300);
@@ -313,152 +223,82 @@
         async function startCall() {
             if (isCall) return;
             new Audio('data:audio/wav;base64,UklGRigAAABXQVZFRm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==').play().catch(()=>{});
-            
-            cBtnNav.disabled = true;
-            cBtnHero.disabled = true;
-            overlay.classList.add('active');
-            
-            isCall = true; 
-            isSpeaking = true; 
-            silenceStart = Date.now();
-            conversationHistory = [];
-            
-            startT();
-            status.innerText = "Connecting";
+            cBtnNav.disabled = true; cBtnHero.disabled = true; overlay.classList.add('active');
+            isCall = true; isSpeaking = true; silenceStart = Date.now(); conversationHistory = [];
+            startT(); status.innerText = "Connecting";
             
             try {
-                // 1. Get Greeting (stateless)
                 const resp = await fetch('/api/voice', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        audio: '', 
-                        text: 'greet',
-                        history: [], 
-                        session_id: 'initial-' + Date.now() 
-                    }) 
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ audio: '', text: 'greet', history: [], session_id: 'init-' + Date.now() }) 
                 });
                 const data = await resp.json();
                 if (data.history) conversationHistory = data.history; 
-                
                 if (data.reply_text) {
                     addLine('Aira', data.reply_text);
                     if (data.reply_audio) await playA(data.reply_audio);
                 }
-                
-                // 2. Init Mic
-                await initAudio();
-                status.innerText = "Listening";
-            } catch (e) {
-                console.error("Connection failed:", e);
-                status.innerText = "Error";
-                setTimeout(endCall, 2000);
-            }
+                await initAudio(); status.innerText = "Listening";
+            } catch (e) { status.innerText = "Error"; setTimeout(endCall, 2000); }
         }
 
         function endCall() {
-            isCall = false;
-            if (activeAudio) { activeAudio.pause(); activeAudio.src = ""; activeAudio = null; }
+            isCall = false; if (activeAudio) { activeAudio.pause(); activeAudio.src = ""; activeAudio = null; }
             if (audioCtx) { try { audioCtx.close(); } catch(e){} }
-            clearInterval(timer);
-            
-            overlay.classList.remove('active');
-            cBtnNav.disabled = false;
-            cBtnHero.disabled = false;
-            setTimeout(()=>{ tBox.innerHTML=''; }, 500);
+            clearInterval(timer); overlay.classList.remove('active');
+            cBtnNav.disabled = false; cBtnHero.disabled = false; setTimeout(()=>{ tBox.innerHTML=''; }, 500);
         }
 
         async function initAudio() {
             try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)({ 
-                    sampleRate: 16000,
-                    latencyHint: 'interactive'
-                });
-                
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } 
-                });
-                
+                audioCtx = new AudioContext({ sampleRate: 16000 });
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
                 const src = audioCtx.createMediaStreamSource(stream);
                 proc = audioCtx.createScriptProcessor(4096, 1, 1);
                 src.connect(proc); proc.connect(audioCtx.destination);
                 
                 proc.onaudioprocess = async (e) => {
-                    if (!isCall || isSpeaking || isMuted) return;
-                    
+                    if (!isCall || isSpeaking || isMuted) { mDot.classList.remove('active'); return; }
                     const inp = e.inputBuffer.getChannelData(0);
-                    const pcm = new Int16Array(inp.length);
                     let sum = 0;
                     for (let i=0; i<inp.length; i++) {
                         const s = Math.max(-1, Math.min(1, inp[i]));
-                        pcm[i] = s * 0x7FFF; sum += s*s;
+                        pcmBuffer.push(Math.floor(s * 0x7FFF)); sum += s*s;
                     }
                     const rms = Math.sqrt(sum/inp.length);
                     updateWave(rms);
-[diff_block_start]
-                    // Buffer audio (Safe loop to prevent stack overflow)
-                    for (let i=0; i<pcm.length; i++) pcmBuffer.push(pcm[i]);
 
-                    if (rms < 0.012) {
-                        if (Date.now() - silenceStart > 650 && pcmBuffer.length > 4000) {
-                            silenceStart = Date.now() + 10000;
-                            await processVoice();
+                    if (rms > 0.015) { mDot.classList.add('active'); silenceStart = Date.now(); }
+                    else { 
+                        mDot.classList.remove('active');
+                        if (Date.now() - silenceStart > 1000 && pcmBuffer.length > 8000) {
+                            silenceStart = Date.now() + 10000; await processVoice();
                         }
-                    } else { 
-                        silenceStart = Date.now(); 
                     }
                 };
-            } catch(e) {
-                console.warn("Mic init failed:", e);
-                endCall();
-            }
+            } catch(e) { endCall(); }
         }
 
         async function processVoice() {
             if (pcmBuffer.length === 0) return;
-            
-            isSpeaking = true;
-            status.innerText = "Thinking";
-            
-            const buffer = new Int16Array(pcmBuffer);
-            pcmBuffer = [];
-            
-            // Safer base64 conversion
+            isSpeaking = true; status.innerText = "Thinking";
+            const buffer = new Int16Array(pcmBuffer); pcmBuffer = [];
             const uint8 = new Uint8Array(buffer.buffer);
-            let binary = "";
-            const chunkSize = 8192;
-            for (let i = 0; i < uint8.length; i += chunkSize) {
-                binary += String.fromCharCode.apply(null, uint8.subarray(i, i + chunkSize));
-            }
+            let binary = ""; const chunkSize = 8192;
+            for (let i=0; i<uint8.length; i += chunkSize) binary += String.fromCharCode.apply(null, uint8.subarray(i, i + chunkSize));
             const base64Audio = btoa(binary);
             
             try {
                 const resp = await fetch('/api/voice', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        audio: base64Audio, 
-                        history: conversationHistory 
-                    })
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ audio: base64Audio, history: conversationHistory })
                 });
-                
                 const data = await resp.json();
-                if (data.error) throw new Error(data.error);
-
                 if (data.history) conversationHistory = data.history;
                 if (data.transcript) addLine('You', data.transcript);
-                if (data.reply_text) {
-                    addLine('Aira', data.reply_text);
-                    if (data.reply_audio) await playA(data.reply_audio);
-                }
-            } catch (e) {
-                console.error("Voice process error:", e);
-                status.innerText = "Network Error";
-            } finally {
-                isSpeaking = false;
-                silenceStart = Date.now();
-                status.innerText = "Listening";
-            }
+                if (data.reply_text) { addLine('Aira', data.reply_text); if (data.reply_audio) await playA(data.reply_audio); }
+            } catch (e) { status.innerText = "Network Error"; }
+            finally { isSpeaking = false; silenceStart = Date.now(); status.innerText = "Listening"; }
         }
 
         function toggleMute() { isMuted = !isMuted; document.getElementById('mute-btn').classList.toggle('active'); }
@@ -466,29 +306,24 @@
         function toggleOption(btn) { btn.classList.toggle('active'); }
 
         function addLine(who, text) {
-            if (!text) return;
-            const l = document.createElement('div');
-            l.className = 't-line';
-            l.innerHTML = `<b>${who}:</b> ${text}`;
-            tBox.appendChild(l);
-            tBox.scrollTop = tBox.scrollHeight;
+            if (!text) return; const l = document.createElement('div');
+            l.className = 't-line'; l.innerHTML = `<b>${who}:</b> ${text}`;
+            tBox.appendChild(l); tBox.scrollTop = tBox.scrollHeight;
         }
 
         async function playA(b) {
-            if (!b) return;
-            isSpeaking = true; 
-            status.innerText = "Speaking";
+            isSpeaking = true; status.innerText = "Speaking";
             activeAudio = new Audio("data:audio/mp3;base64," + b);
             return new Promise(r => {
                 activeAudio.onended = () => { isSpeaking = false; silenceStart = Date.now(); status.innerText = "Listening"; r(); };
-                activeAudio.onerror = () => { isSpeaking = false; silenceStart = Date.now(); status.innerText = "Listening"; r(); };
+                activeAudio.onerror = () => { isSpeaking = false; silenceStart = Date.now(); r(); };
                 activeAudio.play().catch(() => { isSpeaking = false; r(); });
             });
         }
 
         function updateWave(r) { 
             document.querySelectorAll('#vis div').forEach((b, i) => { 
-                const val = isSpeaking ? (20 + Math.sin(Date.now()/150 + i) * 15) : (20 + (r * 600 * (i%3+1)));
+                const val = isSpeaking ? (20 + Math.sin(Date.now()/150 + i) * 18) : (20 + (r * 650 * (i%3+1)));
                 b.style.height = `${val}px`; 
             }); 
         }
