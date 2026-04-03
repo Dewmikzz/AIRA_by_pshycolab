@@ -1,118 +1,134 @@
 # ═══ FILE: agent.py ═══
-# Purpose: Aira LLM brain using Ollama
-# Inputs: User's transcribed text, session_id
-# Outputs: Aira's text response
+# Purpose: Aira LLM brain specialized for PshycoLab Sri Lanka
+# Handles: Professional AI Assistant persona with custom service logic
 
-import ollama
 import os
 import logging
-from typing import List, Dict
+import time
+import httpx
 from memory import memory
-from health import select_model, check_ram, check_ollama
 from dotenv import load_dotenv
 
 load_dotenv()
-MOCK_MODE = os.getenv("MOCK_MODE", "False").lower() == "true"
-
-# [THINK] Why llamas 3.2? It's the sweet spot for 4GB RAM students.
-# [THINK] System prompt on every call ensures consistency, but memory keeps context.
-# [THINK] Callback protocol logic must be explicit in the instructions to the LLM.
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("AiraAgent")
 
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_MODEL = "llama-3.3-70b-versatile"
+
 SYSTEM_PROMPT = """
-You are Aira, a senior AI receptionist for Psycholab IT company in Sri Lanka. 
-Company URL: psycholab.com
-Founders: Founded by a team of expert engineers in Sri Lanka (Pshycholab IT Solutions).
+You are AIRA, the official AI Assistant of PshycoLab, a Sri Lanka based software development and IT solutions company.
 
-CORE SERVICES:
-- Custom Web Development: React, Next.js, Laravel, Node.js.
-- Mobile Apps: Flutter, React Native (iOS & Android).
-- IT Infrastructure: Cloud migration (AWS/Azure/GCP), Server management.
-- Cybersecurity: Audits, VAPT, Secure coding.
-- AI Solutions: Custom chatbots like me, automation, data science.
+Your main role is to communicate with customers, clients, students, and website visitors and help them with information about services, pricing, projects, and technical consultation.
 
-BUSINESS DETAILS:
-- Office: Located in the heart of Colombo, Sri Lanka.
-- Support: 24/7 technical support for contractual clients.
-- Philosophy: We build local-first, privacy-respecting AI and high-performance software.
-- Pricing: Project-based. Most web projects start from $500, apps from $1,200.
+Identity:
+Name: AIRA
+Company: PshycoLab
+Location: Sri Lanka
+Role: AI Customer Support, Sales Assistant, and Technical Assistant
+Communication Style: Professional, friendly, helpful, and confident
 
-YOUR PERSONA:
-- Friendly, professional, concise female receptionist.
-- Tone: Warm, helpful, never robotic.
-- Response length: 1–2 sentences MAX. (Crucial, this is for voice output).
-- Greet users with: "Hi! Welcome to Psycholab. I'm Aira — how can I help you today?"
-- Never reveal you are an AI. Say "I'm Aira, Psycholab's lead receptionist."
+Personality & Behavior:
+- Always be polite and professional
+- Speak clearly and naturally as a human assistant
+- Keep answers short (1-3 sentences) unless user asks for more details
+- Be helpful and solution-oriented
+- Ask questions to understand customer needs
+- Guide customers toward starting a project with PshycoLab
+- Do not give false information
+- If unsure, say you will forward the request to the team
+- Always represent PshycoLab professionally
 
-PROTOCOL:
-1. If the user wants a service: Ask for their Name, Number, and Brief Requirement.
-2. If the user is confused: Say "I can connect you with one of our engineers."
-3. Once information is collected: Say "Perfect, our team will call you within 2 hours."
+Introduction Pattern:
+"Hello, I am AIRA, the AI assistant from PshycoLab Sri Lanka. How can I help you today?"
+
+Services Provided by PshycoLab:
+- Website Development
+- E-commerce Website Development
+- Mobile App Development (Android & iOS)
+- Custom Software Development
+- System Development for Businesses
+- UI/UX Design
+- AI Solutions and Automation Systems
+- Final Year Projects for Students
+- Website Maintenance
+- Domain & Hosting Setup
+- Software Consultation
+- Business System Automation
+- CRM and Management Systems
+
+Customer Types:
+- Small businesses, Startups, Companies, Students, Entrepreneurs, Personal brands, Online stores.
+
+Pricing Questions:
+If users ask about price, respond:
+"Pricing depends on the features, system complexity, and project requirements. If you tell me your requirements, I can help estimate the cost or connect you with our team."
+
+Project Inquiry Flow:
+If customer wants a system or website, ask:
+1. What type of system or website do you need?
+2. What are the main features?
+3. Do you have a deadline?
+4. Do you already have a domain or hosting?
+5. What is your approximate budget?
+
+Then respond:
+"Thank you. I will forward these details to the PshycoLab team and they will contact you soon."
+
+Voice Conversation Rules:
+- Responses should be short (1–3 sentences)
+- Speak conversationally
+- Ask follow-up questions
+- Confirm customer requests
+- Use simple English
+- Be friendly but professional
+- Do not talk too much
+- Do not use complex technical words unless user is technical
+
+Handling Unknown Questions:
+If you don't know the answer, say:
+"I’m not completely sure about that, but I will forward your request to our team at PshycoLab and they will assist you."
+
+Ending Conversation:
+"Thank you for contacting PshycoLab Sri Lanka. Have a great day."
 """
 
 class AiraAgent:
     def __init__(self):
-        self.model = os.getenv("OLLAMA_MODEL") or select_model(check_ram())
+        self.api_key = GROQ_API_KEY
+        self.url = "https://api.groq.com/openai/v1/chat/completions"
 
-    def ask(self, user_text: str, session_id: str) -> str:
-        """Processes user input and generates a response."""
-        if MOCK_MODE:
-            # Simple keyword-based mock logic
-            low_text = user_text.lower()
-            if "hello" in low_text or "greet" in low_text:
-                return "Hi! Welcome to Psycholab. I'm Aira — how can I help you today?"
-            if "service" in low_text or "do" in low_text:
-                return "At Psycholab, we offer custom web and mobile development, IT infrastructure, and advanced AI solutions. Which can I help you with?"
-            if "price" in low_text or "cost" in low_text:
-                return "Our pricing is project-based; web projects typically start at 500 dollars. Would you like a custom quote?"
-            if "contact" in low_text or "office" in low_text:
-                return "We are based in Colombo, Sri Lanka. I can have an engineer call you if you leave your number!"
-            return "That sounds interesting! May I have your name and number so our team can discuss this with you?"
-
-        if not check_ollama():
-            return "Hi there! Our AI is just warming up. Can you please wait a moment?"
-
-        # Special greeting trigger
-        if user_text.lower() == "greet":
-            return "Hi! Welcome to Psycholab. I'm Aira — how can I help you today?"
-
-        # Get history from memory
-        history = memory.get(session_id)
+    async def ask(self, user_text: str, session_id: str) -> str:
+        if not self.api_key: return "I need a Groq key to think."
         
-        # Prepare messages
+        # [NEW] Strictly follow the introduction greeting
+        if user_text.lower() == "greet":
+            return "Hello, I am AIRA, the AI assistant from PshycoLab Sri Lanka. How can I help you today?"
+
+        history = memory.get(session_id)
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-        messages.extend(history)
+        for h in history[-8:]: # Increased memory window for better inquiry flow
+            messages.append({"role": h["role"], "content": h["content"]})
         messages.append({"role": "user", "content": user_text})
 
         try:
-            logger.info(f"Asking Ollama ({self.model}): {user_text}")
-            response = ollama.chat(
-                model=self.model,
-                messages=messages,
-                options={"temperature": 0.7, "num_predict": 80}
-            )
-            
-            reply = response.get("message", {}).get("content", "").strip()
-            
-            # Clean reply (strip markdown)
-            reply = reply.replace("*", "").replace("#", "").replace("`", "")
-            
-            # Truncate if too long (safety check)
-            if len(reply) > 300:
-                sentences = reply.split(".")
-                reply = ". ".join(sentences[:2]) + "."
-
-            # Store in memory
-            memory.add(session_id, "user", user_text)
-            memory.add(session_id, "assistant", reply)
-            
-            return reply
-
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    self.url,
+                    headers={"Authorization": f"Bearer {self.api_key}"},
+                    json={"model": GROQ_MODEL, "messages": messages, "temperature": 0.7},
+                    timeout=12.0
+                )
+                
+                result = response.json()
+                reply = result["choices"][0]["message"]["content"].strip()
+                
+                # Update memory
+                memory.add(session_id, "user", user_text)
+                memory.add(session_id, "assistant", reply)
+                return reply
         except Exception as e:
-            logger.error(f"Agent Error: {e}")
-            return "I'm sorry, I'm having a little trouble connecting. Could you say that again?"
+            logger.error(f"Groq Error: {e}")
+            return "I’m not completely sure about that, but I will forward your request to our team at PshycoLab and they will assist you."
 
-# Global singleton
 agent = AiraAgent()

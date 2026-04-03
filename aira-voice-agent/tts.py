@@ -1,131 +1,69 @@
 # ═══ FILE: tts.py ═══
-# Purpose: Text-to-Speech using Coqui TTS with pyttsx3 fallback
+# Purpose: Professional Cloud Text-to-Speech via Premium Neural Voices
 # Inputs: Text string
-# Outputs: Audio bytes (WAV)
+# Outputs: Audio bytes (High-Fidelity MP3)
 
 import os
-import tempfile
-import time
 import logging
-import re
-from pathlib import Path
+import asyncio
+import edge_tts
+import io
+from gtts import gTTS
 from dotenv import load_dotenv
 
 load_dotenv()
-MOCK_MODE = os.getenv("MOCK_MODE", "False").lower() == "true"
-
-# [THINK] Coqui is high quality but heavy. pyttsx3 is instant but robotic.
-# [THINK] Clean text is vital: '---' or '*' in text makes TTS sound glitchy.
-# [THINK] If both fail, return empty bytes so main.py knows to skip audio.
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("AiraTTS")
 
-try:
-    from TTS.api import TTS
-    COQUI_AVAILABLE = True
-except ImportError:
-    COQUI_AVAILABLE = False
-    logger.warning("Coqui TTS not installed. Falling back to pyttsx3.")
+# Professional Neural Voices for modern fluency
+# en-US-AvaNeural is human-like and modern
+DEFAULT_VOICE = os.getenv("TTS_VOICE", "en-US-AvaNeural")
+SINHALA_VOICE = "si-LK-SameeraNeural" # Fluent Sri Lankan Male (if available) or si-LK-ThiliniNeural (Female)
 
-try:
-    import pyttsx3
-    PYTTSX3_AVAILABLE = True
-except ImportError:
-    PYTTSX3_AVAILABLE = False
-    logger.warning("pyttsx3 not installed.")
-
-class TextToSpeech:
+class PremiumNeuralTTS:
     def __init__(self):
-        self.coqui_model_name = os.getenv("TTS_MODEL", "tts_models/en/ljspeech/vits")
-        self.engine_preference = os.getenv("TTS_ENGINE", "coqui")
-        self.tts_instance = None
-        self.pyttsx3_engine = None
+        self.voice = DEFAULT_VOICE
 
-    def _load_coqui(self):
-        if COQUI_AVAILABLE and self.tts_instance is None:
-            try:
-                logger.info(f"Loading Coqui TTS: {self.coqui_model_name}...")
-                self.tts_instance = TTS(self.coqui_model_name, gpu=False)
-            except Exception as e:
-                logger.error(f"Failed to load Coqui: {e}")
-                self.tts_instance = None
-
-    def _load_pyttsx3(self):
-        if PYTTSX3_AVAILABLE and self.pyttsx3_engine is None:
-            try:
-                self.pyttsx3_engine = pyttsx3.init()
-                voices = self.pyttsx3_engine.getProperty('voices')
-                # Try to find a female voice
-                for voice in voices:
-                    if "female" in voice.name.lower() or "zina" in voice.name.lower():
-                        self.pyttsx3_engine.setProperty('voice', voice.id)
-                        break
-                self.pyttsx3_engine.setProperty('rate', 165)
-            except Exception as e:
-                logger.error(f"Failed to load pyttsx3: {e}")
-
-    def clean_text(self, text: str) -> str:
-        """Strips markdown and limits length for better TTS performance."""
-        text = re.sub(r'[\*\#\-\_\>\<\`]', '', text)
-        text = text.replace('\n', ' ')
-        return text[:300].strip()
-
-    def synthesize(self, text: str) -> bytes:
-        """Converts text to audio bytes (WAV)."""
-        if MOCK_MODE:
-            logger.info(f"Mock TTS: {text}")
-            return b"" # Return empty to skip audio playing in frontend during mock
-
-        text = self.clean_text(text)
+    async def synthesize(self, text: str) -> bytes:
+        """Synthesizes text to high-fidelity audio using modern neural voices."""
         if not text:
             return b""
+            
+        # [THINK] For a 'Modern & Fluent' experience, we use edge-tts (Neural).
+        # We fall back to gTTS (Google) only if the premium engine is blocked.
+        
+        # Select voice based on language
+        current_voice = self.voice
+        if any("\u0d80" <= char <= "\u0dff" for char in text):
+            current_voice = "si-LK-ThiliniNeural" # Switch to Sri Lankan Female voice
+            logger.info(f"Sinhala detected, switching to Premium Sri Lankan Voice: {current_voice}")
 
-        # Try Coqui first if preferred
-        if self.engine_preference == "coqui" and COQUI_AVAILABLE:
-            self._load_coqui()
-            if self.tts_instance:
-                try:
-                    start_time = time.time()
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
-                        tmp_path = tmp.name
-                    
-                    self.tts_instance.tts_to_file(text=text, file_path=tmp_path)
-                    
-                    with open(tmp_path, "rb") as f:
-                        audio_data = f.read()
-                    
-                    os.remove(tmp_path)
-                    logger.info(f"Coqui TTS ({time.time() - start_time:.2f}s) generated {len(audio_data)} bytes")
-                    return audio_data
-                except Exception as e:
-                    logger.error(f"Coqui Synthesis Error: {e}")
+        try:
+            communicate = edge_tts.Communicate(text, current_voice)
+            audio_data = b""
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    audio_data += chunk["data"]
+            
+            if len(audio_data) > 100:
+                logger.info(f"Premium Neural TTS generated {len(audio_data)} bytes")
+                return audio_data
+            else:
+                raise ValueError("Generated audio is too small")
 
-        # Fallback to pyttsx3
-        if PYTTSX3_AVAILABLE:
-            self._load_pyttsx3()
-            if self.pyttsx3_engine:
-                try:
-                    start_time = time.time()
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
-                        tmp_path = tmp.name
-                    
-                    self.pyttsx3_engine.save_to_file(text, tmp_path)
-                    self.pyttsx3_engine.runAndWait()
-                    
-                    # Wait a bit for file to be written/flushed
-                    time.sleep(0.1)
-                    
-                    if os.path.exists(tmp_path):
-                        with open(tmp_path, "rb") as f:
-                            audio_data = f.read()
-                        os.remove(tmp_path)
-                        logger.info(f"pyttsx3 TTS ({time.time() - start_time:.2f}s) generated {len(audio_data)} bytes")
-                        return audio_data
-                except Exception as e:
-                    logger.error(f"pyttsx3 Synthesis Error: {e}")
-
-        return b""
+        except Exception as e:
+            logger.error(f"Premium TTS Error: {e}")
+            logger.info("Falling back to gTTS for reliability...")
+            try:
+                # [RELIABILITY] gTTS is always the bulletproof fallback
+                lang = "si" if any("\u0d80" <= char <= "\u0dff" for char in text) else "en"
+                tts = gTTS(text=text, lang=lang, slow=False)
+                fp = io.BytesIO()
+                tts.write_to_fp(fp)
+                return fp.getvalue()
+            except Exception as ge:
+                logger.error(f"Fallback TTS failed: {ge}")
+                return b""
 
 # Global singleton
-tts = TextToSpeech()
+tts = PremiumNeuralTTS()

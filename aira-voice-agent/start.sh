@@ -1,18 +1,17 @@
 #!/bin/bash
 # ═══ FILE: start.sh ═══
-# Purpose: One-click launcher for Linux/macOS
-# Inputs: Standard shell environment
-# Outputs: Running FastAPI server
+# Production-Grade One-Click Launcher for Aira
 
 echo "══════════════════════════════════════════════"
-echo "   AIRA · Psycholab AI Voice Agent (v3.0)     "
+echo "   AIRA · Production Voice Call (v4.0)        "
 echo "══════════════════════════════════════════════"
 
-# 1. Check Python
-if ! command -v python3 &> /dev/null
-then
-    echo "[!] Python 3 is not installed. Please install it first."
-    exit
+# 1. Check for API Keys
+if [ ! -f .env ]; then
+    echo "[!] .env file not found. Creating from example..."
+    cp .env.example .env
+    echo "[!] PLEASE EDIT .env AND ADD YOUR GROQ_API_KEY AND OPENROUTER_API_KEY."
+    exit 1
 fi
 
 # 2. Create Venv
@@ -24,14 +23,13 @@ fi
 # 3. Activate Venv
 source venv/bin/activate
 
-# 4. Install Deps
-echo "[*] Installing dependencies (this may take a few minutes)..."
-pip install --upgrade pip --quiet
+# 4. Install Dependencies
+echo "[*] Installing production dependencies..."
 pip install -r requirements.txt --quiet
 
-# 5. Run Setup
-python setup.py
-
-# 6. Start Server
-echo "[*] Starting Aira on http://localhost:8000..."
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+# 5. Start Server
+echo "══════════════════════════════════════════════"
+echo "   Aira is starting on http://localhost:8000"
+echo "   Ensure you have internet for Cloud APIs!"
+echo "══════════════════════════════════════════════"
+python3 main.py
