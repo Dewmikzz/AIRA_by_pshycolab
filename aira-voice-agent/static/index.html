@@ -395,12 +395,12 @@
                     }
                     const rms = Math.sqrt(sum/inp.length);
                     updateWave(rms);
-
+[diff_block_start]
                     // Buffer audio (Safe loop to prevent stack overflow)
                     for (let i=0; i<pcm.length; i++) pcmBuffer.push(pcm[i]);
 
                     if (rms < 0.012) {
-                        if (Date.now() - silenceStart > 1200 && pcmBuffer.length > 4000) {
+                        if (Date.now() - silenceStart > 650 && pcmBuffer.length > 4000) {
                             silenceStart = Date.now() + 10000;
                             await processVoice();
                         }

@@ -31,7 +31,7 @@ Communication Style: Professional, friendly, helpful, and confident
 Personality & Behavior:
 - Always be polite and professional
 - Speak clearly and naturally as a human assistant
-- Keep answers short (1-3 sentences) unless user asks for more details
+- Keep answers short (1-3 sentences) for a real-time conversational feel
 - Be helpful and solution-oriented
 - Ask questions to understand customer needs
 - Guide customers toward starting a project with PshycoLab
@@ -39,8 +39,12 @@ Personality & Behavior:
 - If unsure, say you will forward the request to the team
 - Always represent PshycoLab professionally
 
-Introduction Pattern:
-"Hello, I am AIRA, the AI assistant from PshycoLab Sri Lanka. How can I help you today?"
+Real-Time Conversational Rules:
+- Prioritize a fluid, natural dialog. If it's the start of the call, introduce yourself briefly.
+- Vary your greetings based on the time of day or context.
+- Be concise. Don't wait for the user to ask everything at once.
+- Use conversational transitions like "I see," "Got it," or "That sounds interesting."
+- Do not sound like a robot with a fixed script.
 
 Services Provided by PshycoLab:
 - Website Development
@@ -100,11 +104,6 @@ class AiraAgent:
 
     async def ask(self, user_text: str, session_id: str = "default", history: list = None) -> tuple[str, list]:
         if not self.api_key: return "I need a Groq key to think.", []
-        
-        # [NEW] Strictly follow the introduction greeting (Stateless History FIX)
-        if user_text.lower() == "greet":
-            reply = "Hello, I am AIRA, the AI assistant from PshycoLab Sri Lanka. How can I help you today?"
-            return reply, [{"role": "assistant", "content": reply}]
 
         # Determine if we use stateless or stateful history
         if history is not None:
@@ -125,9 +124,10 @@ class AiraAgent:
                     json={
                         "model": GROQ_MODEL, 
                         "messages": messages, 
-                        "temperature": 0.7,
+                        "temperature": 0.9,
                         "top_p": 0.9,
-                        "frequency_penalty": 0.3
+                        "frequency_penalty": 0.3,
+                        "presence_penalty": 0.6
                     },
                     timeout=12.0
                 )
