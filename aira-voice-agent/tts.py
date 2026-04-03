@@ -15,10 +15,7 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("AiraTTS")
 
-# Professional Neural Voices for modern fluency
-# en-US-AvaNeural is human-like and modern
 DEFAULT_VOICE = os.getenv("TTS_VOICE", "en-US-AvaNeural")
-SINHALA_VOICE = "si-LK-SameeraNeural" # Fluent Sri Lankan Male (if available) or si-LK-ThiliniNeural (Female)
 
 class PremiumNeuralTTS:
     def __init__(self):
@@ -29,10 +26,6 @@ class PremiumNeuralTTS:
         if not text:
             return b""
             
-        # [THINK] For a 'Modern & Fluent' experience, we use edge-tts (Neural).
-        # We fall back to gTTS (Google) only if the premium engine is blocked.
-        
-        # Select voice based on language
         current_voice = self.voice
         if any("\u0d80" <= char <= "\u0dff" for char in text):
             current_voice = "si-LK-ThiliniNeural" # Switch to Sri Lankan Female voice
@@ -53,17 +46,21 @@ class PremiumNeuralTTS:
 
         except Exception as e:
             logger.error(f"Premium TTS Error: {e}")
-            logger.info("Falling back to gTTS for reliability...")
+            logger.info("Moving to gTTS (Async Safe Fallback)...")
             try:
-                # [RELIABILITY] gTTS is always the bulletproof fallback
-                lang = "si" if any("\u0d80" <= char <= "\u0dff" for char in text) else "en"
-                tts = gTTS(text=text, lang=lang, slow=False)
-                fp = io.BytesIO()
-                tts.write_to_fp(fp)
-                return fp.getvalue()
+                # [STABILITY] Use to_thread to prevent blocking the main loop during fallback
+                return await asyncio.to_thread(self._gtts_fallback, text)
             except Exception as ge:
                 logger.error(f"Fallback TTS failed: {ge}")
                 return b""
+
+    def _gtts_fallback(self, text: str) -> bytes:
+        """Synchronous gTTS wrapper for thread safety."""
+        lang = "si" if any("\u0d80" <= char <= "\u0dff" for char in text) else "en"
+        tts_obj = gTTS(text=text, lang=lang, slow=False)
+        fp = io.BytesIO()
+        tts_obj.write_to_fp(fp)
+        return fp.getvalue()
 
 # Global singleton
 tts = PremiumNeuralTTS()

@@ -39,7 +39,7 @@
         .btn-call-nav { background: var(--primary); color: #000; padding: 12px 30px; border-radius: 40px; font-weight: 900; font-size: 0.8rem; text-transform: uppercase; border: none; cursor: pointer; box-shadow: 0 10px 20px var(--primary-glow); transition: 0.3s; }
         .btn-call-nav:disabled { opacity: 0.2; cursor: default; box-shadow: none; }
 
-        /* --- Stage --- */
+        /* --- Global Stage --- */
         main { flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 40px 80px; }
         .stage { position: absolute; width: 100%; max-width: 1400px; padding: 0 40px; display: none; opacity: 0; transition: all 0.6s ease; transform: scale(0.98); }
         .stage.active { display: block; opacity: 1; transform: scale(1); }
@@ -59,16 +59,9 @@
 
         .content-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
         .glass-card { background: var(--surface); border: 1px solid var(--border); padding: 45px; border-radius: 32px; transition: 0.3s; height: 100%; opacity: 0; transform: translateY(30px); }
-        .glass-card:nth-child(1) { animation: cardIn 0.8s 0.2s forwards; }
-        .glass-card:nth-child(2) { animation: cardIn 0.8s 0.4s forwards; }
-        .glass-card:nth-child(3) { animation: cardIn 0.8s 0.6s forwards; }
-
         .glass-card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0, 230, 118, 0.1); }
         .glass-card h3 { font-size: 1.4rem; margin-bottom: 15px; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; }
         .glass-card p { color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; }
-
-        .btn-lab { display: inline-block; margin-top: 40px; background: var(--primary); color: #000; padding: 15px 40px; border-radius: 40px; font-weight: 900; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; text-decoration: none; box-shadow: 0 10px 20px var(--primary-glow); transition: 0.3s; }
-        .btn-lab:hover { transform: scale(1.05); box-shadow: 0 15px 35px var(--primary-glow); }
 
         footer { padding: 30px 80px; display: flex; justify-content: space-between; border-top: 1px solid var(--border); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #555; flex-shrink: 0; background: #000; }
         footer a { color: var(--primary); text-decoration: none; font-weight: 700; transition: 0.3s; }
@@ -78,10 +71,10 @@
         @keyframes slideTitle { to { opacity: 1; transform: translateY(0); } }
         @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
 
-        /* --- Next-Level UI Call Screen --- */
+        /* --- Next-Level Call Screen Overlay --- */
         #call-overlay { 
             position: fixed; bottom: -100%; left: 0; width: 100vw; height: 100vh; 
-            background: rgba(0,0,0,0.95); backdrop-filter: blur(50px); z-index: 2000; 
+            background: rgba(0,0,0,0.96); backdrop-filter: blur(60px); z-index: 2000; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             padding: 60px 40px; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
         }
@@ -91,57 +84,62 @@
         .call-branding h3 { font-size: 3.5rem; font-weight: 900; color: #FFF; letter-spacing: -3px; line-height: 1; margin-bottom: 8px; }
         .call-branding #timer { font-size: 1rem; color: var(--primary); font-weight: 700; font-family: 'Roboto Mono', monospace; opacity: 0.8; }
         
-        .status-header { background: rgba(0, 230, 118, 0.08); color: var(--primary); padding: 12px 30px; border-radius: 50px; font-weight: 900; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 4px; display: flex; align-items: center; gap: 15px; border: 1px solid rgba(0, 230, 118, 0.2); margin-bottom: 40px; }
-        .neural-dot { width: 12px; height: 12px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 15px var(--primary); animation: neuralPulse 2s infinite ease-in-out; }
-        @keyframes neuralPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+        .status-header { 
+            background: rgba(0, 230, 118, 0.08); color: var(--primary); padding: 12px 30px; 
+            border-radius: 50px; font-weight: 900; font-size: 0.85rem; text-transform: uppercase; 
+            letter-spacing: 4px; display: flex; align-items: center; gap: 15px; 
+            border: 1px solid rgba(0, 230, 118, 0.2); margin-bottom: 40px; 
+        }
+        .neural-dot { width: 12px; height: 12px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 20px var(--primary); transition: 0.2s; }
+        .neural-dot.passive { opacity: 0.2; box-shadow: none; animation: none; }
+        .neural-dot.active { opacity: 1; box-shadow: 0 0 15px var(--primary); animation: neuralPulse 1.5s infinite ease-in-out; }
+        @keyframes neuralPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.6; } }
 
         /* --- Live Script Monitor --- */
         #t-box { 
-            width: 100%; max-width: 600px; height: 320px; overflow-y: auto; 
+            width: 100%; max-width: 650px; height: 350px; overflow-y: auto; 
             padding: 40px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); 
             border-radius: 40px; margin-bottom: 50px; position: relative;
             scrollbar-width: none; mask-image: linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent);
         }
         #t-box::-webkit-scrollbar { display: none; }
-        .t-line { color: #EEE; font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px; opacity: 0; animation: lineFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .t-line b { color: var(--primary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px; display: block; margin-bottom: 4px; }
-        @keyframes lineFade { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .t-line { color: #EEE; font-size: 1.15rem; line-height: 1.6; margin-bottom: 30px; opacity: 0; animation: lineFade 0.5s forwards; }
+        .t-line b { color: var(--primary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px; display: block; margin-bottom: 6px; }
+        @keyframes lineFade { to { transform: translateY(0); opacity: 1; } }
 
-        /* --- Optimized Focused Controls --- */
-        .focused-controls { display: flex; gap: 30px; align-items: center; margin-bottom: 40px; position: relative; }
+        /* --- Professional Focused Controls --- */
+        .focused-controls { display: flex; gap: 40px; align-items: center; margin-bottom: 40px; }
         
         .elite-btn { 
-            width: 85px; height: 85px; border-radius: 50%; border: 1px solid var(--border); 
-            background: rgba(255,255,255,0.06); cursor: pointer; transition: 0.3s; 
+            width: 90px; height: 90px; border-radius: 50%; border: 1px solid var(--border); 
+            background: rgba(255,255,255,0.08); cursor: pointer; transition: 0.3s; 
             display: flex; align-items: center; justify-content: center; position: relative;
         }
-        .elite-btn svg { width: 32px; height: 32px; fill: #FFF; transition: 0.3s; }
-        .elite-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); transform: translateY(-5px); }
+        .elite-btn svg { width: 34px; height: 34px; fill: #FFF; transition: 0.3s; }
+        .elite-btn:hover { background: rgba(255,255,255,0.12); border-color: var(--primary); transform: translateY(-5px); }
         .elite-btn.active { background: var(--primary); border-color: var(--primary); }
         .elite-btn.active svg { fill: #000; }
-        .elite-btn span { position: absolute; bottom: -30px; font-size: 0.7rem; color: #FFF; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; opacity: 0.6; width: 120px; text-align: center; }
+        .elite-btn span { position: absolute; bottom: -32px; font-size: 0.7rem; color: #FFF; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; opacity: 0.6; width: 120px; text-align: center; }
 
         .elite-hangup { 
-            width: 100px; height: 100px; border-radius: 50%; background: var(--danger); 
+            width: 105px; height: 105px; border-radius: 50%; background: var(--danger); 
             border: none; cursor: pointer; transition: 0.4s; display: flex; align-items: center; justify-content: center; 
             box-shadow: 0 20px 40px rgba(255, 59, 48, 0.3);
         }
         .elite-hangup:hover { transform: scale(1.1) rotate(135deg); box-shadow: 0 25px 50px rgba(255, 59, 48, 0.5); }
-        .elite-hangup svg { fill: #FFF; width: 45px; height: 45px; }
+        .elite-hangup svg { fill: #FFF; width: 50px; height: 50px; }
 
         /* Neural Orb Visualizer */
-        .visualizer { display: flex; gap: 4px; height: 60px; align-items: center; margin-bottom: 20px; padding: 0 40px; }
-        .visualizer div { width: 4px; background: var(--primary); border-radius: 20px; transition: height 0.1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .visualizer { display: flex; gap: 5px; height: 70px; align-items: center; margin-bottom: 25px; }
+        .visualizer div { width: 5px; background: var(--primary); border-radius: 20px; transition: height 0.1s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @media (max-width: 768px) {
             header { padding: 15px 30px; }
-            .branding h1 { font-size: 1.8rem; }
-            nav { display: none; }
             .home-grid { grid-template-columns: 1fr; text-align: center; gap: 40px; }
-            .hero-text h2 { font-size: 4rem; letter-spacing: -2px; }
-            #t-box { height: 260px; padding: 25px; }
-            .elite-btn { width: 70px; height: 70px; }
-            .elite-hangup { width: 85px; height: 85px; }
+            .hero-text h2 { font-size: 4rem; }
+            #t-box { height: 280px; padding: 25px; }
+            .elite-btn { width: 75px; height: 75px; }
+            .elite-hangup { width: 90px; height: 90px; }
         }
     </style>
 </head>
@@ -166,7 +164,7 @@
                 <div class="hero-visual"><img src="/static/aira_vector.png" alt="Aira Vector Robot"></div>
                 <div class="hero-text">
                     <h2>AiRA v1</h2>
-                    <p>Experience the <b>neural excellence</b> of the world's leading voice agent by PshycoLab.</p>
+                    <p>Experience the <b>neural excellence</b> of the world's leading voice agent by PshycoLab™.</p>
                     <button id="btn-call-hero" class="btn-discover" onclick="startCall()">Initiate Connection &rarr;</button>
                 </div>
             </div>
@@ -186,7 +184,7 @@
             <div class="content-grid">
                 <div class="glass-card"><h3>Direct Email</h3><p>hello@pshycolab.com<br>support@aira.tech</p></div>
                 <div class="glass-card"><h3>Innovation Hub</h3><p>Level 12, Pshyco Lab™ Plaza,<br>Colombo 07, Sri Lanka.</p></div>
-                <div class="glass-card"><h3>Global Studio</h3><p>Access our full range of AI solutions and enterprise services via our primary studio portal.</p><a href="https://pshycolab.com" target="_blank" class="btn-lab">Visit Studio</a></div>
+                <div class="glass-card"><h3>Global Studio</h3><p>Access our full range of AI solutions and enterprise services via our primary studio portal.</p></div>
             </div>
         </div>
     </main>
@@ -196,15 +194,15 @@
         <div>&copy; 2026 <a href="https://pshycolab.com" target="_blank">Pshyco Lab™</a> | All Rights Reserved</div>
     </footer>
 
-    <!-- NEXT-LEVEL CALL SCREEN -->
+    <!-- ELITE CALL SCREEN OVERLAY -->
     <div id="call-overlay">
         <div class="call-branding">
             <h3>aira</h3>
             <div id="timer">00:00</div>
         </div>
         
-        <div class="status-header">
-            <div class="neural-dot"></div>
+        <div class="status-header" id="s-header">
+            <div class="neural-dot passive" id="n-dot"></div>
             <span id="c-status">Connecting</span>
         </div>
 
@@ -222,7 +220,7 @@
                 </button>
             </div>
             
-            <button class="elite-hangup" onclick="endCall()">
+            <button class="elite-hangup" id="h-btn" onclick="endCall()">
                 <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
             </button>
 
@@ -238,12 +236,13 @@
     <script>
         let audioCtx; let proc; let timer; let isCall = false; 
         let isSpeaking = false; let silenceStart = Date.now();
-        let isMuted = false; let showTrans = true; // Transcript always visible by default now
+        let isMuted = false; let showTrans = true;
         let activeAudio = null; let pcmBuffer = []; let conversationHistory = [];
 
         const status = document.getElementById('c-status');
         const overlay = document.getElementById('call-overlay');
         const tBox = document.getElementById('t-box');
+        const nDot = document.getElementById('n-dot');
         const cBtnNav = document.getElementById('btn-call-nav');
         const cBtnHero = document.getElementById('btn-call-hero');
 
@@ -260,17 +259,16 @@
         async function startCall() {
             if (isCall) return;
             new Audio('data:audio/wav;base64,UklGRigAAABXQVZFRm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==').play().catch(()=>{});
-            cBtnNav.disabled = true; cBtnHero.disabled = true; 
-            overlay.classList.add('active');
+            cBtnNav.disabled = true; cBtnHero.disabled = true; overlay.classList.add('active');
             
             isCall = true; isSpeaking = true; silenceStart = Date.now(); conversationHistory = [];
-            startT(); status.innerText = "Initiating Neural Link";
+            startT(); status.innerText = "Initializing Neural Link";
+            nDot.classList.remove('active'); nDot.classList.add('passive');
             
             try {
-                // Backend integration remains identical to preserve function
                 const resp = await fetch('/api/voice', {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ audio: '', text: 'greet', history: [], session_id: 'airalux-' + Date.now() }) 
+                    body: JSON.stringify({ audio: '', text: 'greet', history: [], session_id: 'airaluxe-' + Date.now() }) 
                 });
                 const data = await resp.json();
                 if (data.history) conversationHistory = data.history; 
@@ -293,13 +291,14 @@
         async function initAudio() {
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppressor: true } });
                 const src = audioCtx.createMediaStreamSource(stream);
                 proc = audioCtx.createScriptProcessor(4096, 1, 1);
                 src.connect(proc); proc.connect(audioCtx.destination);
                 
                 proc.onaudioprocess = async (e) => {
-                    if (!isCall || isSpeaking || isMuted) return;
+                    if (!isCall || isSpeaking || isMuted) { nDot.classList.remove('active'); nDot.classList.add('passive'); return; }
+                    
                     const inp = e.inputBuffer.getChannelData(0);
                     let sum = 0;
                     for (let i=0; i<inp.length; i++) {
@@ -309,17 +308,22 @@
                     const rms = Math.sqrt(sum/inp.length);
                     updateWave(rms);
 
-                    if (rms > 0.015) { 
+                    // --- [FINE-TUNED VOICE CAPTURE] ---
+                    // Lowered threshold to 0.008 for ultra-sensitivity
+                    if (rms > 0.008) { 
                         silenceStart = Date.now(); 
                         status.innerText = "Aira is Listening";
+                        nDot.classList.add('active'); nDot.classList.remove('passive');
                     } else { 
-                        if (Date.now() - silenceStart > 1000 && pcmBuffer.length > 8000) {
+                        nDot.classList.remove('active'); nDot.classList.add('passive');
+                        // 1000ms silence + at least 1.0s of audio (16k samples) to trigger
+                        if (Date.now() - silenceStart > 1000 && pcmBuffer.length > 12000) {
                             silenceStart = Date.now() + 10000; 
                             await processVoice();
                         }
                     }
                 };
-            } catch(e) { endCall(); }
+            } catch(e) { console.error("Mic Error:", e); endCall(); }
         }
 
         async function processVoice() {
@@ -343,30 +347,21 @@
                     addLine('Aira', data.reply_text); 
                     if (data.reply_audio) await playA(data.reply_audio); 
                 }
-            } catch (e) { status.innerText = "Network Signal Lost"; }
+            } catch (e) { status.innerText = "Signal Loss Interruption"; }
             finally { isSpeaking = false; silenceStart = Date.now(); status.innerText = "Neural Link Active"; }
         }
 
-        function toggleMute() { 
-            isMuted = !isMuted; 
-            document.getElementById('mute-btn').classList.toggle('active'); 
-            status.innerText = isMuted ? "Mic Muted" : "Neural Link Active";
-        }
-        function toggleTranscript() { 
-            showTrans = !showTrans; 
-            document.getElementById('trans-btn').classList.toggle('active'); 
-            tBox.style.display = showTrans ? 'block' : 'none'; 
-        }
+        function toggleMute() { isMuted = !isMuted; document.getElementById('mute-btn').classList.toggle('active'); status.innerText = isMuted ? "Audio Gated" : "Neural Link Active"; }
+        function toggleTranscript() { showTrans = !showTrans; document.getElementById('trans-btn').classList.toggle('active'); tBox.style.display = showTrans ? 'block' : 'none'; }
 
         function addLine(who, text) {
             if (!text) return; const l = document.createElement('div');
             l.className = 't-line'; l.innerHTML = `<b>${who}</b> ${text}`;
-            tBox.appendChild(l); 
-            tBox.scrollTo({ top: tBox.scrollHeight, behavior: 'smooth' });
+            tBox.appendChild(l); tBox.scrollTo({ top: tBox.scrollHeight, behavior: 'smooth' });
         }
 
         async function playA(b) {
-            isSpeaking = true; status.innerText = "Aira is Speaking";
+            isSpeaking = true; status.innerText = "Aira is Projecting";
             activeAudio = new Audio("data:audio/mp3;base64," + b);
             return new Promise(r => {
                 activeAudio.onended = () => { isSpeaking = false; silenceStart = Date.now(); status.innerText = "Neural Link Active"; r(); };
@@ -377,20 +372,12 @@
 
         function updateWave(r) { 
             document.querySelectorAll('#vis div').forEach((b, i) => { 
-                const val = isSpeaking ? (25 + Math.sin(Date.now()/150 + i) * 25) : (10 + (r * 800 * (i%4+1)));
-                b.style.height = `${Math.min(val, 60)}px`; 
+                const val = isSpeaking ? (30 + Math.sin(Date.now()/150 + i) * 30) : (10 + (r * 1200 * (i%4+1)));
+                b.style.height = `${Math.min(val, 70)}px`; 
             }); 
         }
         
-        function startT() { 
-            const s = Date.now(); 
-            timer = setInterval(() => { 
-                const d = Date.now() - s; 
-                const m = Math.floor(d/60000).toString().padStart(2,'0'); 
-                const sec = Math.floor((d%60000)/1000).toString().padStart(2,'0'); 
-                document.getElementById('timer').innerText = `${m}:${sec}`; 
-            }, 1000); 
-        }
+        function startT() { const s = Date.now(); timer = setInterval(() => { const d = Date.now() - s; const m = Math.floor(d/60000).toString().padStart(2,'0'); const sec = Math.floor((d%60000)/1000).toString().padStart(2,'0'); document.getElementById('timer').innerText = `${m}:${sec}`; }, 1000); }
     </script>
 </body>
 </html>

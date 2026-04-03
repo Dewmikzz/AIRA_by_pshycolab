@@ -1,5 +1,5 @@
 # ═══ FILE: main.py ═══
-# Purpose: FastAPI WebSocket Orchestrator with Binary Streaming Support
+# Purpose: FastAPI WebSocket Orchestrator with Enterprise Stability & Binary Support
 # Handles: Binary Audio Chunks & JSON Command Messages
 
 import os
@@ -7,6 +7,7 @@ import base64
 import uuid
 import json
 import logging
+import traceback
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -15,13 +16,14 @@ from contextlib import asynccontextmanager
 from pydantic import BaseModel
 from typing import List, Optional
 
+# --- [MODELS] ---
 class VoiceRequest(BaseModel):
     audio: Optional[str] = None # Base64 encoded audio
     text: Optional[str] = None # Direct text input
     history: List[dict] = []
     session_id: Optional[str] = "default"
 
-# Import Production Cloud Modules
+# --- [SERVICES] ---
 from stt import stt
 from tts import tts
 from agent import agent
@@ -53,27 +55,27 @@ async def read_root():
 
 @app.post("/api/voice")
 async def voice_api(request: VoiceRequest):
+    """Stateless Voice API for High-Velocity Real-Time Conversation."""
     try:
-        # Check for direct text first (e.g. for greetings)
+        # 1. Input Processing
         transcript = request.text
-        logger.info(f"API Request | Session: {request.session_id} | History: {len(request.history)} | Text: {transcript}")
+        logger.info(f"API Request | Session: {request.session_id} | Hist: {len(request.history)}")
         
         if not transcript and request.audio:
-            # 1. Decode Audio
             actual_audio = base64.b64decode(request.audio)
-            
-            # 2. STT
             transcript = await stt.transcribe(actual_audio)
+            
             if transcript in ["__silence__", "__error__"]:
-                return {"error": "No speech detected", "history": request.history}
+                return {"error": "Silence", "history": request.history}
             
         if not transcript:
-            return {"error": "No input provided", "history": request.history}
+            return {"error": "No Input", "history": request.history}
             
-        # 3. Agent (Stateless)
+        # 2. Intelligence (Llama 3.3 70B Core)
         reply_text, updated_history = await agent.ask(transcript, history=request.history)
+        logger.info(f"API Reply | {reply_text[:60]}...")
         
-        # 4. TTS
+        # 3. Neural Synthesis (Premium Cloud TTS)
         reply_audio = await tts.synthesize(reply_text)
         reply_b64 = base64.b64encode(reply_audio).decode("utf-8") if reply_audio else ""
         
@@ -84,18 +86,23 @@ async def voice_api(request: VoiceRequest):
             "history": updated_history
         }
     except Exception as e:
-        logger.error(f"API Error: {e}")
-        return {"error": str(e)}
+        # [CRITICAL] Log full traceback to identify random exits
+        logger.error(f"API Recovery Error: {e}")
+        traceback.print_exc()
+        return {"error": "Stability Recovery triggered", "details": str(e)}
 
 @app.websocket("/voice-call")
 async def websocket_endpoint(websocket: WebSocket):
+    """Stateful WebSocket for Dedicated Real-Time Sessions."""
     await websocket.accept()
     session_id = str(uuid.uuid4())
-    logger.info(f"New Voice Call started: {session_id}")
+    logger.info(f"Elite Neural Call Started: {session_id}")
     
     try:
-        # 1. Send Aira's greeting immediately!
+        # 1. Neural Handshake
         greeting_text, _ = await agent.ask("greet", session_id)
+        logger.info(f"Neural Handshake: {greeting_text[:50]}...")
+        
         greeting_audio = await tts.synthesize(greeting_text)
         greeting_b64 = base64.b64encode(greeting_audio).decode("utf-8") if greeting_audio else ""
         
@@ -106,27 +113,22 @@ async def websocket_endpoint(websocket: WebSocket):
             "session_id": session_id
         })
         
-        # 2. Main Voice Loop
+        # 2. Interaction Loop
         audio_buffer = bytearray()
         
         while True:
-            # [FIX] Handle both binary chunks (audio) and text (commands)
             msg = await websocket.receive()
             
             if "bytes" in msg:
-                # Direct Binary PCM from Frontend
                 audio_buffer.extend(msg["bytes"])
-                
-                # Simple threshold for processing (e.g. 500ms of audio)
-                if len(audio_buffer) > 16000: # 1 second at 16k mono
-                    # Check for silence or send for processing
+                if len(audio_buffer) > 16000: # 1s simple gating
                     pass 
 
             elif "text" in msg:
                 data = json.loads(msg["text"])
                 
                 if data["type"] == "end_of_speech":
-                    if len(audio_buffer) < 500:
+                    if len(audio_buffer) < 1000:
                         audio_buffer = bytearray()
                         continue
 
@@ -140,15 +142,14 @@ async def websocket_endpoint(websocket: WebSocket):
                     
                     await websocket.send_json({"type": "transcript", "text": transcript})
                     reply_text, _ = await agent.ask(transcript, session_id)
-                    await websocket.send_json({"type": "reply_text", "text": reply_text})
                     
                     await websocket.send_json({"type": "status", "state": "speaking"})
                     reply_audio = await tts.synthesize(reply_text)
                     reply_b64 = base64.b64encode(reply_audio).decode("utf-8") if reply_audio else ""
                     
                     await websocket.send_json({
-                        "type": "reply_audio",
-                        "audio": reply_b64
+                        "type": "reply_text", "text": reply_text,
+                        "type": "reply_audio", "audio": reply_b64
                     })
                     await websocket.send_json({"type": "status", "state": "listening"})
 
@@ -158,15 +159,22 @@ async def websocket_endpoint(websocket: WebSocket):
                     break
 
     except WebSocketDisconnect:
-        logger.info(f"Disconnected Session: {session_id}")
+        logger.info(f"Neural Node Disconnected: {session_id}")
         memory.reset(session_id)
     except Exception as e:
-        logger.error(f"WebSocket Error: {e}")
+        logger.error(f"WebSocket System Crash: {e}")
+        traceback.print_exc()
         try:
-            await websocket.send_json({"type": "error", "message": f"Engine Error: {str(e)}"})
+            await websocket.send_json({"type": "error", "message": str(e)})
         except: pass
         memory.reset(session_id)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    try:
+        uvicorn.run(app, host="0.0.0.0", port=8000)
+    except SystemExit:
+        logger.info("Aira shutting down gracefully.")
+    except Exception as e:
+        logger.error(f"CRITICAL PROCESS CRASH: {e}")
+        traceback.print_exc()
