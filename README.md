@@ -1,39 +1,44 @@
-# ═══ FILE: README.md ═══
-# Aira — Psycholab AI Receptionist (v3.0)
+# AIRA · Production-Grade AI Voice Call (v4.0)
 
-Aira is a fully autonomous, local-first AI voice agent built for Psycholab IT Company, Sri Lanka. It uses OpenAI Whisper for Speech-to-Text, Ollama for LLM reasoning, and Coqui TTS for high-quality voice synthesis.
+Aira is a professional, high-fidelity AI voice receptionist for **Psycholab**, built with a focus on real-time, zero-latency communication. It uses elite Cloud APIs to achieve sub-second response times in a natural "phone call" environment.
 
-## 🚀 Key Features
-- **100% Local**: No data leaves your machine. 100% free open-source models.
-- **Dynamic Model Selection**: Auto-detects RAM to pick the best LLM (Llama 3.2, Mistral, Llama 3.1, or TinyLlama).
-- **Voice-to-Voice Pipeline**: seamless transcription, brain processing, and speech playback.
-- **Modern UI**: Dark-mode web interface with real-time audio visualization.
-- **Sri Lanka Context**: Pre-trained on Psycholab's services and callback protocol.
+## 🚀 The Stack
+- **STT**: [Groq](https://groq.com/) — Whisper-Large-V3 (Real-time transcription).
+- **LLM**: [OpenRouter](https://openrouter.ai/) — Llama-3.1-8B-Instruct (High-speed cognition).
+- **TTS**: [Edge-TTS](https://github.com/rany2/edge-tts) — Microsoft Jenny Neural Voice (Zero cost, high quality).
+- **Transport**: FastAPI + WebSockets (Bi-directional streaming).
+- **Frontend**: Vanilla JS + Web Audio API + Voice Activity Detection (VAD).
 
-## 🛠️ Tech Stack
-- **STT**: `openai-whisper` (base)
-- **LLM**: `ollama/llama3.2` (via `ollama` Python library)
-- **TTS**: `Coqui-ai/TTS` (VITS model) with `pyttsx3` fallback
-- **Backend**: `FastAPI` + `Uvicorn`
-- **Frontend**: Vanilla HTML/CSS/JS (No build step)
+## 🛠️ Quick Start (3 Steps Only)
 
-## 📦 Setup & Installation
+### 1. Get Your Free API Keys
+-   Go to [groq.com](https://groq.com/), create an account, and generate an API key.
+-   Go to [openrouter.ai](https://openrouter.ai/), create an account, and generate an API key.
 
-### Windows
-1. Install [Ollama](https://ollama.com).
-2. Install [ffmpeg](https://ffmpeg.org/download.html) (add to PATH).
-3. Run `start.bat`.
-
-### Linux/macOS
-1. Install [Ollama](https://ollama.com).
-2. Install ffmpeg (`sudo apt install ffmpeg` or `brew install ffmpeg`).
-3. Run `./start.sh`.
-
-## 🧪 Testing
-Run the automated connectivity test:
+### 2. Configure Environment
+Create a `.env` file from the example:
 ```bash
-python tests/test_talk.py
+copy .env.example .env
+```
+Open `.env` and paste your keys:
+```env
+GROQ_API_KEY="gsk_..."
+OPENROUTER_API_KEY="sk-or-..."
 ```
 
-## 📜 License
-Built by Antigravity for Psycholab. Proprietary / Open Source (MIT).
+### 3. Launch & Call
+Run the one-click launcher:
+```bash
+./start.bat
+```
+Visit **[http://localhost:8000](http://localhost:8000)** and click the green **"Start Call"** button.
+
+## 📞 Call Features
+-   **Auto-Greeting**: Aira greets you immediately when the call starts.
+-   **Real-Time VAD**: The app automatically detects when you stop speaking to trigger the AI response.
+-   **Voice Aura**: Visual feedback pulses when Aira speaks.
+-   **Call Log**: View the live transcript of the call.
+-   **Malaysia Identity**: Specialized knowledge about Psycholab's Malaysian office and services.
+
+---
+*Built for Psycholab by AIRA Engineering Team.*
