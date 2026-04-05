@@ -8,6 +8,8 @@
     <meta name="keywords" content="AI Voice Agent, Neural Intelligence, Pshyco Lab, Llama 3.1, Voice AI, IT Solutions Sri Lanka, Enterprise AI, Virtual Receptionist">
     <meta name="author" content="Pshyco Lab™">
     <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -58,7 +60,15 @@
 
         /* --- Full Screen Lock --- */
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; font-family:'Outfit', sans-serif; }
-        body { background: var(--bg); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        html { background: #000; }
+        
+        body { 
+            background: var(--bg); color: var(--text-main); 
+            min-height: 100vh; min-height: 100dvh;
+            height: 100vh; height: 100dvh;
+            overflow: hidden; display: flex; flex-direction: column; 
+        }
 
         /* --- Header --- */
         header { 
@@ -111,12 +121,13 @@
 
         /* --- Next-Level Call Screen Overlay --- */
         #call-overlay { 
-            position: fixed; bottom: -100%; left: 0; width: 100vw; height: 100vh; 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
             background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(60px); z-index: 2000; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             padding: 60px 40px; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
+            transform: translateY(100%); visibility: hidden;
         }
-        #call-overlay.active { bottom: 0; }
+        #call-overlay.active { transform: translateY(0); visibility: visible; }
         
         .call-branding { text-align: center; margin-bottom: 30px; display: flex; flex-direction: column; align-items: center; }
         .call-branding h3 { font-size: 3.5rem; font-weight: 900; color: #000; letter-spacing: -2px; line-height: 1; margin-bottom: 5px; }
