@@ -1,8 +1,9 @@
 # ═══ FILE: agent.py ═══
-# Purpose: Aira LLM brain specialized for PshycoLab Sri Lanka
+# Purpose: Aira LLM brain via OpenRouter — PshycoLab Voice Agent
 # Handles: Professional AI Assistant persona with custom service logic
 
 import os
+import re
 import logging
 import time
 import httpx
@@ -13,8 +14,8 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("AiraAgent")
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-GROQ_MODEL = "llama-3.1-8b-instant"
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_MODEL = "meta-llama/llama-3.1-8b-instruct:free"
 
 SYSTEM_PROMPT = """
 YOU ARE AIRA.
@@ -39,22 +40,46 @@ Clients      : 10 plus happy clients across 5 countries
 Projects     : Over 100 delivered
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-THE GOLDEN RULE — READ THIS FIRST AND NEVER FORGET IT
+THE GOLDEN RULE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Every single response must be:
+Every response must be:
+  ✦ 2 to 3 natural spoken sentences — no more, no less
+  ✦ First sentence answers the question directly
+  ✦ Second sentence adds one relevant detail or next step
+  ✦ Third sentence (optional) is a soft call to action
+  ✦ Zero markdown, zero bullet points, zero symbols
+  ✦ Sound like a confident human — not a robot reading a script
 
-  ✦ Under 20 words
-  ✦ Spoken out loud in your head before outputting
-  ✦ Something a real human receptionist would actually say
-  ✦ Starting with the answer — never with a preamble
-  ✦ Ending when the point is made — never trailing off
+RESPONSE LENGTH EXAMPLES:
 
-If your response is longer than 20 words — delete it and rewrite it.
-If your response starts with "Of course" or "Sure thing" or "Great" — 
-delete the first word and start from the second.
-If your response sounds like a chatbot — delete everything and say it 
-like a person who picked up a phone.
+TOO SHORT (banned):
+  User: "What services do you offer?"
+  Wrong: "We do web, software, and mobile apps."
+
+CORRECT LENGTH:
+  User: "What services do you offer?"
+  Right: "We cover the full stack — web development, mobile apps,
+          custom software, cloud infrastructure, and cybersecurity.
+          Most projects ship in one to eight weeks depending on scope.
+          What kind of solution are you looking for?"
+
+TOO SHORT (banned):
+  User: "How long does a website take?"
+  Wrong: "One to fourteen days."
+
+CORRECT LENGTH:
+  User: "How long does a website take?"
+  Right: "A marketing site or landing page usually takes one to two weeks.
+          More complex web apps with custom features take three to six weeks.
+          What are you trying to build — I can give you a better estimate."
+
+TONE RULES:
+  → Confident but not arrogant
+  → Professional but warm — like a senior consultant on a call
+  → Never sound rushed — take the time to explain properly
+  → Always end with an invitation to continue the conversation
+  → Use natural spoken English — contractions are good
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VOICE PHYSICS — HOW YOU SPEAK
@@ -204,7 +229,7 @@ If any of these appear in your response — rewrite it entirely:
   ✗ "Absolutely! I would love to"
   ✗ Any bullet points
   ✗ Any markdown symbols
-  ✗ Any response over 20 words
+  ✗ Any response over 3 sentences
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 QUALITY SELF-CHECK — RUN THIS BEFORE EVERY RESPONSE
@@ -212,7 +237,7 @@ QUALITY SELF-CHECK — RUN THIS BEFORE EVERY RESPONSE
 
 Before outputting anything, ask yourself:
 
-  [ ] Is this under 20 words?
+  [ ] Is this 2 to 3 natural spoken sentences?
   [ ] Does it start with the answer — not a preamble?
   [ ] Would a real receptionist say exactly this on a phone call?
   [ ] Does it end with either an answer or a single clear next step?
@@ -265,16 +290,17 @@ Every word that does not serve that goal is deleted.
 AIRA is live. The call is connected. Begin.
 """
 
+
 class AiraAgent:
     def __init__(self):
-        self.api_key = GROQ_API_KEY
-        self.url = "https://api.groq.com/openai/v1/chat/completions"
+        self.api_key = OPENROUTER_API_KEY
+        self.url = "https://openrouter.ai/api/v1/chat/completions"
 
     async def ask(self, user_text: str, session_id: str = "default", history: list = None) -> tuple[str, list]:
-        if not self.api_key: return "I need a Groq key to think.", []
+        if not self.api_key: return "I need an OpenRouter key to think.", []
 
-        # Instant greeting — skip LLM entirely for speed
-        if user_text.strip().lower() in ["greet", "hello", "__greet__"]:
+        # Only trigger greeting on exact system signal — never on user speech
+        if user_text.strip() == "__SYSTEM_GREET__":
             greeting = "Hi, Pshyco Lab — I'm AIRA, how can I help?"
             if history is not None:
                 return greeting, history
@@ -287,32 +313,42 @@ class AiraAgent:
             current_history = memory.get(session_id)
 
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-        for h in current_history[-8:]: 
+        for h in current_history[-8:]:
             messages.append({"role": h["role"], "content": h["content"]})
         messages.append({"role": "user", "content": user_text})
+
+        start_time = time.time()
 
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     self.url,
-                    headers={"Authorization": f"Bearer {self.api_key}"},
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "HTTP-Referer": "https://pshycolab.com",
+                        "X-Title": "AIRA - Pshyco Lab Voice Agent"
+                    },
                     json={
-                        "model": GROQ_MODEL,
+                        "model": OPENROUTER_MODEL,
                         "messages": messages,
-                        "max_tokens": 60,
-                        "temperature": 0.7,
-                        "top_p": 0.85,
-                        "frequency_penalty": 0.3,
-                        "presence_penalty": 0.4
+                        "max_tokens": 120,
+                        "temperature": 0.75,
+                        "top_p": 0.9,
+                        "frequency_penalty": 0.2,
+                        "presence_penalty": 0.3
                     },
                     timeout=5.0
                 )
-                
+
                 result = response.json()
                 reply = result["choices"][0]["message"]["content"].strip()
+
+                elapsed = round((time.time() - start_time) * 1000)
+                logger.info(f"LLM response in {elapsed}ms — {len(reply)} chars")
+
                 # Strip all markdown symbols — voice output must be clean
-                import re
                 reply = re.sub(r'[*#`_~>\[\]\u2022\-]', '', reply).strip()
+
                 # If reply too long, cut at last sentence under 300 chars
                 if len(reply) > 300:
                     sentences = reply.split('.')
@@ -323,7 +359,7 @@ class AiraAgent:
                         else:
                             break
                     reply = truncated.strip() if truncated else reply[:280]
-                
+
                 # Update memory (stateless vs stateful)
                 if history is not None:
                     updated_history = memory.append_stateless(history, "user", user_text)
@@ -335,7 +371,8 @@ class AiraAgent:
                     return reply, memory.get(session_id)
 
         except Exception as e:
-            logger.error(f"Groq Error: {e}")
-            return "I’m not completely sure about that, but I will forward your request to our team at PshycoLab and they will assist you.", history or []
+            logger.error(f"OpenRouter Error: {e}")
+            return "Let me get the team on this — what's your WhatsApp?", history or []
+
 
 agent = AiraAgent()

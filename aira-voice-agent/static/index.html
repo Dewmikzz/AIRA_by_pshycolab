@@ -268,7 +268,7 @@
             try {
                 const resp = await fetch('/api/voice', {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ audio: '', text: 'greet', history: [], session_id: 'airaluxe-' + Date.now() }) 
+                    body: JSON.stringify({ audio: '', text: '__SYSTEM_GREET__', history: [], session_id: 'airaluxe-' + Date.now() }) 
                 });
                 const data = await resp.json();
                 if (data.history) conversationHistory = data.history; 

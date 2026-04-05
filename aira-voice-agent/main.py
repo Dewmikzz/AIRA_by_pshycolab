@@ -100,7 +100,7 @@ async def websocket_endpoint(websocket: WebSocket):
     
     try:
         # 1. Neural Handshake
-        greeting_text, _ = await agent.ask("greet", session_id)
+        greeting_text, _ = await agent.ask("__SYSTEM_GREET__", session_id)
         logger.info(f"Neural Handshake: {greeting_text[:50]}...")
         
         greeting_audio = await tts.synthesize(greeting_text)

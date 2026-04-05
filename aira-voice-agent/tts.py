@@ -16,7 +16,8 @@ logger = logging.getLogger("AiraTTS")
 
 CARTESIA_API_KEY = os.getenv("CARTESIA_API_KEY")
 
-# Best natural male voice on Cartesia — "Clony"
+# Male voice — hardcoded, do not change via env
+# Voice: "Clony" — Natural, professional male
 CARTESIA_VOICE_ID = "79a125e8-cd45-4c13-8a67-188112f4dd22"
 
 
@@ -29,13 +30,14 @@ class PremiumNeuralTTS:
         return text.strip()
 
     async def synthesize(self, text: str) -> bytes:
-        """Synthesizes text using Cartesia (Primary) with Edge-TTS fallback."""
+        """Synthesizes text using Cartesia (Primary) with Edge-TTS male fallback."""
         text = self.clean(text)
         if not text:
             return b""
 
-        # PRIMARY: Cartesia via httpx (no SDK — direct REST call)
+        # PRIMARY: Cartesia via httpx (direct REST — no SDK)
         if CARTESIA_API_KEY:
+            logger.info(f"Using Cartesia voice: {CARTESIA_VOICE_ID}")
             try:
                 async with httpx.AsyncClient(timeout=5.0) as client:
                     resp = await client.post(
@@ -67,8 +69,8 @@ class PremiumNeuralTTS:
             except Exception as e:
                 logger.error(f"Cartesia failed: {e}")
 
-        # FALLBACK: Edge-TTS male voice
-        logger.info("Falling back to Edge-TTS male voice (GuyNeural)")
+        # FALLBACK: Edge-TTS male voice (GuyNeural)
+        logger.info("Falling back to Edge-TTS male voice (en-US-GuyNeural)")
         try:
             communicate = edge_tts.Communicate(text, "en-US-GuyNeural")
             audio_data = b""
