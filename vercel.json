@@ -1,26 +1,9 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "main.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxDuration": 25,
-        "memory": 1024
-      }
+      "source": "/(.*)",
+      "destination": "/$1"
     }
-  ],
-  "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "main.py"
-    }
-  ],
-  "env": {
-    "PYTHON_VERSION": "3.12"
-  }
+  ]
 }
