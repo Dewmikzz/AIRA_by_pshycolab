@@ -309,15 +309,23 @@
                     updateWave(rms);
 
                     // --- [FINE-TUNED VOICE CAPTURE] ---
-                    // Lowered threshold to 0.008 for ultra-sensitivity
-                    if (rms > 0.008) { 
+                    // Threshold 0.015 — catches softer voices, ignores hiss
+                    if (rms > 0.015) { 
                         silenceStart = Date.now(); 
                         status.innerText = "Aira is Listening";
                         nDot.classList.add('active'); nDot.classList.remove('passive');
                     } else { 
                         nDot.classList.remove('active'); nDot.classList.add('passive');
-                        // 1000ms silence + at least 1.0s of audio (16k samples) to trigger
-                        if (Date.now() - silenceStart > 1000 && pcmBuffer.length > 12000) {
+                        
+                        // 15 seconds idle auto-hangup
+                        if (Date.now() - silenceStart > 15000) {
+                            addLine('System', 'Call disconnected due to inactivity.');
+                            endCall();
+                            return;
+                        }
+
+                        // 250ms silence + at least 0.25s of audio to trigger
+                        if (Date.now() - silenceStart > 250 && pcmBuffer.length > 4000) {
                             silenceStart = Date.now() + 10000; 
                             await processVoice();
                         }

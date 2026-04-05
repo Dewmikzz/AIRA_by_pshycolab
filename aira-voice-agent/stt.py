@@ -68,7 +68,7 @@ class GroqSTT:
                 with open(tmp_path, "rb") as f:
                     files = {"file": (filename, f, "audio/wav")}
                     data = {
-                        "model": "whisper-large-v3",
+                        "model": "whisper-large-v3-turbo",
                         "response_format": "json"
                         # [Sri Lanka Fix] Removing fixed "en" language to allow auto-detection of Sinhala/English
                     }
@@ -90,9 +90,18 @@ class GroqSTT:
                 text = result.get("text", "").strip()
                 
                 logger.info(f"Groq STT ({time.time() - start_time:.2f}s): {text}")
+                lower_text = text.lower().strip()
+                hallucinations = [
+                    "thanks for watching.", "thanks for watching", 
+                    "thank you for watching.", "thank you for watching", 
+                    "please subscribe.", "please subscribe", "subscribe.",
+                    "thank you.", "thank you", "thanks.", "thanks"
+                ]
                 
-                if len(text) < 2:
+                # Drop common Whisper hallucinations and extreme short strings
+                if len(text) < 2 or lower_text in hallucinations:
                     return "__silence__"
+
                 return text
 
         except Exception as e:
