@@ -361,12 +361,18 @@
         }
 
         async function playA(b) {
+            if (!b) return;
             isSpeaking = true; status.innerText = "Aira is Projecting";
-            activeAudio = new Audio("data:audio/mp3;base64," + b);
+            
+            // Detect format (simple check for WAV header 'RIFF')
+            let mime = "audio/mpeg"; 
+            if (b.startsWith("UklGR")) mime = "audio/wav";
+            
+            activeAudio = new Audio(`data:${mime};base64,${b}`);
             return new Promise(r => {
                 activeAudio.onended = () => { isSpeaking = false; silenceStart = Date.now(); status.innerText = "Neural Link Active"; r(); };
-                activeAudio.onerror = () => { isSpeaking = false; silenceStart = Date.now(); r(); };
-                activeAudio.play().catch(() => { isSpeaking = false; r(); });
+                activeAudio.onerror = (e) => { console.error("Playback Error:", e); isSpeaking = false; silenceStart = Date.now(); r(); };
+                activeAudio.play().catch((e) => { console.error("Play Failed:", e); isSpeaking = false; r(); });
             });
         }
 
